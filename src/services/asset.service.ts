@@ -1,0 +1,95 @@
+import { CreationAttributes, FindOptions } from 'sequelize';
+import AssetDAO from '../daos/asset.dao';
+import TemplateDAO from '../daos/template.dao';
+import VerticalDAO from '../daos/vertical.dao';
+import { Asset } from '../models/asset';
+import { AssetIn, AssetOut } from '../interfaces/asset.interface';
+
+class AssetService {
+  public save(data: AssetIn): Promise<AssetOut> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!data.assetname) {
+          throw new Error('Validation failed: assetname is required.');
+        }
+        if (!data.templateId) {
+          throw new Error('Validation failed: templateId is required.');
+        }
+        if (!data.verticalId) {
+          throw new Error('Validation failed: verticalId is required.');
+        }
+
+        const parentVertical = await VerticalDAO.findById(data.verticalId);
+        if (!parentVertical) {
+          return reject(new Error(`Cannot save asset because Vertical with ID '${data.verticalId}' does not exist.`));
+        }
+
+        const parentTemplate = await TemplateDAO.findById(data.templateId);
+        if (!parentTemplate) {
+          return reject(new Error(`Cannot save asset because Template with ID '${data.templateId}' does not exist.`));
+        }
+
+        if (parentTemplate.verticalId !== parentVertical.verticalId) {
+          return reject(new Error(`Template '${parentTemplate.templateName}' does not belong to Vertical '${parentVertical.verticalName}'.`));
+        }
+        const existingAsset = await Asset.findOne({ where: { assetName: data.assetname } });
+        if (existingAsset && existingAsset.assetId !== data.assetId) {
+           return reject(new Error(`Asset name '${data.assetname}' already exists. Name must be unique.`));
+        }
+
+        const dataToSave: CreationAttributes<Asset> = {
+          assetId: data.assetId,
+          assetName: data.assetname,
+          description: data.description,
+          figmaURL: data.figmaURL,
+          figmaId: data.figmaId,
+          templateId: data.templateId,
+          verticalId: data.verticalId,
+        };
+
+        const savedAsset = await AssetDAO.save(dataToSave);
+
+        resolve({
+          assetId: savedAsset.assetId,
+          assetname: savedAsset.assetName,
+          description: savedAsset.description,
+          figmaURL: savedAsset.figmaURL,
+          figmaId: savedAsset.figmaId,
+          templateId: savedAsset.templateId,
+          verticalId: savedAsset.verticalId,
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  public list(templateId: number): Promise<AssetOut[]> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const options: FindOptions = {
+          where: { templateId },
+          order: [['assetname', 'ASC']],
+        };
+
+        const assets = await AssetDAO.list(options);
+
+        resolve(
+          assets.map(asset => ({
+            assetId: asset.assetId,
+            assetname: asset.assetName,
+            description: asset.description,
+            figmaURL: asset.figmaURL,
+            figmaId: asset.figmaId,
+            templateId: asset.templateId,
+            verticalId: asset.verticalId,
+          }))
+        );
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+}
+
+export default new AssetService();
