@@ -6,7 +6,7 @@ import { sequelize } from './config/database';
 import apiRoutes from './routes/routes'; 
 
 const app: Application = express();
-const PORT = 8080;
+const PORT = process.env.PORT
 
 app.use(cors());
 app.use(express.json());
