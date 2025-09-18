@@ -15,6 +15,10 @@ class AssetDAO {
     public async findById(id: number): Promise<Asset | null> {
         return Asset.findByPk(id);
     }
+
+    public async findByName(name: string): Promise<Asset | null> {
+        return Asset.findOne({ where: { assetName: name } });
+    }
 }
 
 export default new AssetDAO();

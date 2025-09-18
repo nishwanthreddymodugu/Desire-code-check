@@ -16,9 +16,9 @@ verticalRouter.post("/save", async (req: Request, res: Response) => {
     let status = 500;
 
     if (error.message.includes("required")) {
-      status = 400; // Bad Request
+      status = 400; 
     } else if (error.message.includes("already exists")) {
-      status = 409; // Conflict
+      status = 409; 
     }
 
     res.status(status).json({ message: error.message });
@@ -34,7 +34,7 @@ verticalRouter.get("/list", async (_req: Request, res: Response) => {
     let status = 500;
 
     if (error.message.includes("No verticals")) {
-      status = 404; // Not Found
+      status = 404; 
     }
 
     res.status(status).json({ message: error.message });

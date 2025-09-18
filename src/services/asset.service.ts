@@ -32,7 +32,8 @@ class AssetService {
         if (parentTemplate.verticalId !== parentVertical.verticalId) {
           return reject(new Error(`Template '${parentTemplate.templateName}' does not belong to Vertical '${parentVertical.verticalName}'.`));
         }
-        const existingAsset = await Asset.findOne({ where: { assetName: data.assetname } });
+        
+        const existingAsset = await AssetDAO.findByName(data.assetname);
         if (existingAsset && existingAsset.assetId !== data.assetId) {
            return reject(new Error(`Asset name '${data.assetname}' already exists. Name must be unique.`));
         }
