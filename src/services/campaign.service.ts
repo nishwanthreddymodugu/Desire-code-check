@@ -21,19 +21,23 @@ class CampaignService {
         ]);
 
         if (!template) {
+          await transaction.rollback();
           return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
         }
         if (template.verticalId !== data.verticalId) {
+          await transaction.rollback();
           return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
         }
         const foundAssetIds = originalAssets.map(a => a.assetId);
         const missingAssetIds = data.assets.filter(id => !foundAssetIds.includes(id));
         if (missingAssetIds.length > 0) {
+          await transaction.rollback();
           return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`));
         }
 
         for (const asset of originalAssets) {
           if (!asset.figmaId) {
+            await transaction.rollback();
             return reject(new Error(`Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`));
           }
         }
