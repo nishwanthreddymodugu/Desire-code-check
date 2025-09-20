@@ -8,6 +8,7 @@ import { Asset } from '../models/asset';
 import { Template } from '../models/template';
 import figmaService from './figma.service';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
+import logger from '../config/logger'; // Winston logger
 
 class CampaignService {
 
@@ -15,30 +16,37 @@ class CampaignService {
     return new Promise(async (resolve, reject) => {
       const transaction = await sequelize.transaction();
       try {
+        logger.info(`Creating campaign: ${data.campaignname}`);
+
         const [template, originalAssets] = await Promise.all([
           TemplateDAO.findById(data.templateId),
           AssetDAO.list({ where: { assetId: data.assets } }),
         ]);
 
         if (!template) {
-          await transaction.rollback();
-          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+          const msg = `Template with ID '${data.templateId}' does not exist.`;
+          logger.error(msg);
+          return reject(new Error(msg));
         }
         if (template.verticalId !== data.verticalId) {
-          await transaction.rollback();
-          return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
+          const msg = `Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`;
+          logger.error(msg);
+          return reject(new Error(msg));
         }
+
         const foundAssetIds = originalAssets.map(a => a.assetId);
         const missingAssetIds = data.assets.filter(id => !foundAssetIds.includes(id));
         if (missingAssetIds.length > 0) {
-          await transaction.rollback();
-          return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`));
+          const msg = `These asset IDs do not exist: ${missingAssetIds.join(', ')}.`;
+          logger.error(msg);
+          return reject(new Error(msg));
         }
 
         for (const asset of originalAssets) {
           if (!asset.figmaId) {
-            await transaction.rollback();
-            return reject(new Error(`Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`));
+            const msg = `Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`;
+            logger.error(msg);
+            return reject(new Error(msg));
           }
         }
 
@@ -51,7 +59,9 @@ class CampaignService {
           verticalId: template.verticalId,
           status: 'draft',
         };
+
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
+        logger.info(`Campaign created with ID: ${newCampaign.campaignId}`);
 
         const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
         const clonedFigmaIds = await Promise.all(clonePromises);
@@ -62,9 +72,12 @@ class CampaignService {
           assetName: asset.assetName,
           clonedFigmaId: clonedFigmaIds[index].clonedFileId,
         }));
+
         const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
+        logger.info(`Cloned and linked ${createdAssets.length} assets for campaign ID: ${newCampaign.campaignId}`);
 
         await transaction.commit();
+        logger.info(`Transaction committed for campaign ID: ${newCampaign.campaignId}`);
 
         resolve({
           campaignId: newCampaign.campaignId,
@@ -76,8 +89,9 @@ class CampaignService {
           templateId: newCampaign.templateId,
           assets: createdAssets.map(asset => asset.assetId),
         });
-      } catch (error) {
+      } catch (error: any) {
         await transaction.rollback();
+        logger.error(`Transaction rolled back. Error creating campaign: ${error.message}`);
         reject(error);
       }
     });
@@ -86,6 +100,7 @@ class CampaignService {
   public list(filters: any): Promise<CampaignListOut[]> {
     return new Promise(async (resolve, reject) => {
       try {
+        logger.info(`Listing campaigns with filters: ${JSON.stringify(filters)}`);
         const options: FindOptions = { where: {}, include: [], order: [['createdAt', 'DESC']] };
         const whereClause: any = {};
 
@@ -101,6 +116,7 @@ class CampaignService {
         options.where = whereClause;
 
         const campaigns = await CampaignDAO.list(options);
+        logger.info(`Fetched ${campaigns.length} campaigns`);
 
         resolve(campaigns.map(c => ({
           campaignId: c.campaignId,
@@ -111,8 +127,8 @@ class CampaignService {
           verticalId: c.verticalId,
           templateId: c.templateId,
         })));
-      } catch (error) {
-        console.error('Error in CampaignService.list:', error);
+      } catch (error: any) {
+        logger.error(`Error listing campaigns: ${error.message}`);
         reject(error);
       }
     });
@@ -121,8 +137,13 @@ class CampaignService {
   public getById(campaignId: number): Promise<CampaignGetOut> {
     return new Promise(async (resolve, reject) => {
       try {
+        logger.info(`Fetching campaign by ID: ${campaignId}`);
         const campaign = await CampaignDAO.findById(campaignId);
-        if (!campaign) return reject(new Error('Campaign not found'));
+        if (!campaign) {
+          const msg = 'Campaign not found';
+          logger.warn(msg);
+          return reject(new Error(msg));
+        }
 
         resolve({
           campaignId: campaign.campaignId,
@@ -135,7 +156,8 @@ class CampaignService {
           templateId: campaign.templateId,
           assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
         });
-      } catch (error) {
+      } catch (error: any) {
+        logger.error(`Error fetching campaign by ID ${campaignId}: ${error.message}`);
         reject(error);
       }
     });
