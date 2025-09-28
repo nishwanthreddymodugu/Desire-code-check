@@ -3,8 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 import { sequelize } from "./config/database";
-import apiRoutes from "./routes/routes";
-import logger from "./config/logger";
+import apiRoutes from "./routes";
+import createLogger from "./config/logger";
+
+const logger = createLogger(module); // pass module to show filename in logs
 
 const app: Application = express();
 const PORT = process.env.PORT;

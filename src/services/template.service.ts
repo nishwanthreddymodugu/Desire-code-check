@@ -3,18 +3,18 @@ import TemplateDAO from '../daos/template.dao';
 import VerticalDAO from '../daos/vertical.dao';
 import { Template } from '../models/template';
 import { TemplateIn, TemplateOut } from '../interfaces/template.interface';
-import logger from '../config/logger'; // Winston logger
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 class TemplateService {
   public save(data: TemplateIn): Promise<TemplateOut> {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info(`Saving template: ${data.templatename} under verticalId: ${data.verticalId}`);
-
+        logger.debug(`Attempting to save template: ${data.templatename}`);
         if (!data.templatename) throw new Error("templatename is required.");
         if (!data.verticalId) throw new Error("verticalId is required.");
 
-        // 1. Check duplicates under the same vertical
         const templatesInSameVertical = await TemplateDAO.list({ where: { verticalId: data.verticalId } });
         const duplicateInSameVertical = templatesInSameVertical.find(t =>
           t.templateName.toLowerCase() === data.templatename.toLowerCase() &&
@@ -22,12 +22,9 @@ class TemplateService {
         );
 
         if (duplicateInSameVertical) {
-          const msg = "templatename already exists under this vertical, please use another name.";
-          logger.error(msg);
-          return reject(new Error(msg));
+          return reject(new Error("templatename already exists under this vertical, please use another name."));
         }
 
-        // 2. Check duplicates in other verticals
         const templatesWithName = await TemplateDAO.list({ where: { templateName: data.templatename } });
         const duplicateInOtherVertical = templatesWithName.find(t =>
           t.verticalId !== data.verticalId &&
@@ -35,16 +32,12 @@ class TemplateService {
         );
 
         if (duplicateInOtherVertical) {
-          const msg = "templatename already exists in a different vertical, use another name.";
-          logger.error(msg);
-          return reject(new Error(msg));
+          return reject(new Error("templatename already exists in a different vertical, use another name."));
         }
 
         const parentVertical = await VerticalDAO.findById(data.verticalId);
         if (!parentVertical) {
-          const msg = `Cannot save template because Vertical with ID '${data.verticalId}' does not exist.`;
-          logger.error(msg);
-          return reject(new Error(msg));
+          return reject(new Error(`Cannot save template because Vertical with ID '${data.verticalId}' does not exist.`));
         }
 
         const dataToSave: CreationAttributes<Template> = {
@@ -62,7 +55,6 @@ class TemplateService {
           verticalId: savedTemplate.verticalId,
         });
       } catch (error: any) {
-        logger.error(`Error saving template: ${error.message}`);
         reject(error);
       }
     });
@@ -71,15 +63,12 @@ class TemplateService {
   public list(verticalId: number): Promise<TemplateOut[]> {
     return new Promise(async (resolve, reject) => {
       try {
-        logger.info(`Fetching templates for verticalId: ${verticalId}`);
-
+        logger.debug(`Attempting to list templates for verticalId: ${verticalId}`);
         const options: FindOptions = {
           where: { verticalId },
           order: [['templateName', 'ASC']],
         };
-
         const templates = await TemplateDAO.list(options);
-        logger.info(`Fetched ${templates.length} templates for verticalId: ${verticalId}`);
 
         resolve(
           templates.map((t) => ({
@@ -88,8 +77,14 @@ class TemplateService {
             verticalId: t.verticalId,
           }))
         );
+        const count = templates.length;
+        if (count === 0) {
+          logger.info(`No templates found for verticalId: ${verticalId}`);
+        } else {
+          const label = count === 1 ? 'template' : 'templates';
+          logger.info(`Returned ${count} ${label} for verticalId: ${verticalId}`);
+        }
       } catch (error: any) {
-        logger.error(`Error fetching templates for verticalId ${verticalId}: ${error.message}`);
         reject(error);
       }
     });
