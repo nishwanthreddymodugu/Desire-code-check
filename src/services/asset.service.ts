@@ -4,38 +4,32 @@ import TemplateDAO from '../daos/template.dao';
 import VerticalDAO from '../daos/vertical.dao';
 import { Asset } from '../models/asset';
 import { AssetIn, AssetOut } from '../interfaces/asset.interface';
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 class AssetService {
   public save(data: AssetIn): Promise<AssetOut> {
     return new Promise(async (resolve, reject) => {
       try {
-        if (!data.assetname) {
-          throw new Error('Validation failed: assetname is required.');
-        }
-        if (!data.templateId) {
-          throw new Error('Validation failed: templateId is required.');
-        }
-        if (!data.verticalId) {
-          throw new Error('Validation failed: verticalId is required.');
-        }
+        logger.debug(`Attempting to save asset: ${data.assetname}`);
+        if (!data.assetname) throw new Error('Validation failed: assetname is required.');
+        if (!data.templateId) throw new Error('Validation failed: templateId is required.');
+        if (!data.verticalId) throw new Error('Validation failed: verticalId is required.');
 
         const parentVertical = await VerticalDAO.findById(data.verticalId);
-        if (!parentVertical) {
-          return reject(new Error(`Cannot save asset because Vertical with ID '${data.verticalId}' does not exist.`));
-        }
+        if (!parentVertical) return reject(new Error(`Cannot save asset because Vertical with ID '${data.verticalId}' does not exist.`));
 
         const parentTemplate = await TemplateDAO.findById(data.templateId);
-        if (!parentTemplate) {
-          return reject(new Error(`Cannot save asset because Template with ID '${data.templateId}' does not exist.`));
-        }
+        if (!parentTemplate) return reject(new Error(`Cannot save asset because Template with ID '${data.templateId}' does not exist.`));
 
         if (parentTemplate.verticalId !== parentVertical.verticalId) {
           return reject(new Error(`Template '${parentTemplate.templateName}' does not belong to Vertical '${parentVertical.verticalName}'.`));
         }
-        
+
         const existingAsset = await AssetDAO.findByName(data.assetname);
         if (existingAsset && existingAsset.assetId !== data.assetId) {
-           return reject(new Error(`Asset name '${data.assetname}' already exists. Name must be unique.`));
+          return reject(new Error(`Asset name '${data.assetname}' already exists. Name must be unique.`));
         }
 
         const dataToSave: CreationAttributes<Asset> = {
@@ -49,6 +43,7 @@ class AssetService {
         };
 
         const savedAsset = await AssetDAO.save(dataToSave);
+        logger.info(`Asset saved successfully: ${savedAsset.assetName} (ID: ${savedAsset.assetId})`);
 
         resolve({
           assetId: savedAsset.assetId,
@@ -59,7 +54,7 @@ class AssetService {
           templateId: savedAsset.templateId,
           verticalId: savedAsset.verticalId,
         });
-      } catch (error) {
+      } catch (error: any) {
         reject(error);
       }
     });
@@ -68,11 +63,11 @@ class AssetService {
   public list(templateId: number): Promise<AssetOut[]> {
     return new Promise(async (resolve, reject) => {
       try {
+        logger.debug(`Attempting to list assets for templateId: ${templateId}`);
         const options: FindOptions = {
           where: { templateId },
           order: [['assetname', 'ASC']],
         };
-
         const assets = await AssetDAO.list(options);
 
         resolve(
@@ -86,7 +81,15 @@ class AssetService {
             verticalId: asset.verticalId,
           }))
         );
-      } catch (error) {
+        const count = assets.length;
+        if (count === 0) {
+          logger.info(`No assets found for templateId: ${templateId}`);
+        } else {
+          const label = count === 1 ? 'asset' : 'assets';
+          logger.info(`Returned ${count} ${label} for templateId: ${templateId}`);
+        }
+        
+      } catch (error: any) {
         reject(error);
       }
     });

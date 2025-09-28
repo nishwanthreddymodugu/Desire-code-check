@@ -2,26 +2,49 @@ import { CreationAttributes, FindOptions, Transaction } from 'sequelize';
 import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
 import { Asset } from '../models/asset';
+import createLogger from '../config/logger';
+const logger = createLogger(module);
 
 class CampaignDAO {
     
     public async createCampaign(data: CreationAttributes<Campaign>, transaction: Transaction): Promise<Campaign> {
-        return Campaign.create(data, { transaction });
+        try {
+            const campaign = await Campaign.create(data, { transaction });
+            return campaign;
+        } catch (error) {
+            logger.error(`${(error as Error).message}`);
+            throw error;
+        }
     }
 
     public async bulkCreateCampaignAssets(data: readonly CreationAttributes<CampaignAsset>[], transaction: Transaction): Promise<CampaignAsset[]> {
-        return CampaignAsset.bulkCreate(data, { transaction });
+        try {
+            const assets = await CampaignAsset.bulkCreate(data, { transaction });
+            return assets;
+        } catch (error) {
+            logger.error(`${(error as Error).message}`);
+            throw error;
+        }
     }
     
     public async findById(id: number): Promise<Campaign | null> {
-        return Campaign.findByPk(id, {
-            // Eager load the associated master Assets
-            include: [Asset]
-        });
+        try {
+            const campaign = await Campaign.findByPk(id, { include: [Asset] });
+            return campaign;
+        } catch (error) {
+            logger.error(`${id}: ${(error as Error).message}`);
+            throw error;
+        }
     }
 
     public async list(options: FindOptions): Promise<Campaign[]> {
-        return Campaign.findAll(options);
+        try {
+            const campaigns = await Campaign.findAll(options);
+            return campaigns;
+        } catch (error) {
+            logger.error(`${(error as Error).message}`);
+            throw error;
+        }
     }
 }
 

@@ -97,3 +97,25 @@ You should see the following output in your terminal, confirming that everything
 ✅ Database connection established.
 🚀 Server running on http://localhost:8080
 ```
+
+## 📝 Logging
+
+This project uses Winston with log rotation to handle application logs.
+
+After installing project dependencies, run:
+
+```bash
+npm install winston winston-daily-rotate-file
+```
+
+Added daily rotating file transport with hourly rotation (YYYY-MM-DD-HH) and 7-day retention.
+Integrated logger in services, routes, DAOs, scripts, main server, and database for consistent logging.
+
+Example Log Output
+```
+[2025-09-23 12:54:31] [server.ts] INFO: 🚀 Server running on http://localhost:8080
+[2025-09-23 12:54:53] [asset.service.ts] INFO: Returned 2 assets for templateId: 2
+```
+Log File Location:  logs/app-YYYY-MM-DD-HH.log
+
+Make sure the logs/ folder exists, or Winston will create it automatically.
