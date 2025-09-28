@@ -71,7 +71,7 @@ describe('TemplateService', () => {
 
       await expect(
         TemplateService.save({ templatename: 'Email', verticalId: 1 })
-      ).rejects.toThrow('templatename already exists in a different vertical,use another name');
+      ).rejects.toThrow('templatename already exists in a different vertical, use another name.');
 
       expect(mockedTemplateDAO.save).not.toHaveBeenCalled();
     });
