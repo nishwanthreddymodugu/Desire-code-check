@@ -79,7 +79,7 @@ describe('AssetService', () => {
 
       await expect(
         AssetService.save({ assetname: 'Hero', templateId: 1, verticalId: 1 })
-      ).rejects.toThrow("Cannot save asset because Vertical with ID '1' does not exist.");
+      ).rejects.toThrow("Vertical with ID '1' does not exist.");
     });
 
     it('rejects when the template is not found', async () => {
@@ -88,7 +88,7 @@ describe('AssetService', () => {
 
       await expect(
         AssetService.save({ assetname: 'Hero', templateId: 1, verticalId: 1 })
-      ).rejects.toThrow("Cannot save asset because Template with ID '1' does not exist.");
+      ).rejects.toThrow("Template with ID '1' does not exist.");
     });
 
     it('rejects when the template belongs to a different vertical', async () => {

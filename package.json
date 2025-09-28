@@ -15,6 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.620.0",
+    "@aws-sdk/client-sqs": "^3.620.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -41,6 +43,7 @@
     "sequelize-cli": "^6.6.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.4.5",
     "umzug": "^3.8.1"
   }
