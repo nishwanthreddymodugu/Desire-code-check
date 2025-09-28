@@ -1,23 +1,38 @@
-import logger from '../config/logger'; // Winston logger
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 class FigmaService {
   async cloneFile(originalFileId: string): Promise<{ clonedFileId: string }> {
-    logger.info(`[FigmaService] Cloning Figma file: ${originalFileId}`);
-    await new Promise(res => setTimeout(res, 300)); // simulate API delay
-    const clonedFileId = `cloned_${Date.now()}`;
-    logger.info(`[FigmaService] Successfully cloned file: ${clonedFileId}`);
-    return { clonedFileId };
+    try {
+      logger.debug(`Attempting to clone Figma file: ${originalFileId}`);
+      await new Promise(res => setTimeout(res, 300));
+
+      const clonedFileId = `cloned_${Date.now()}`;
+      logger.info(`Cloned Figma file ID: ${clonedFileId}`);
+
+      return { clonedFileId };
+    } catch (error: any) {
+      logger.error(`Error in cloning Figma file ${originalFileId}: ${error.message}`);
+      throw error;
+    }
   }
 
   async updateFile(fileId: string, updates: any): Promise<boolean> {
-    logger.info(`[FigmaService] Updating Figma file ${fileId} with updates: ${JSON.stringify(updates)}`);
-    
-    // Simulate API delay
-    await new Promise(res => setTimeout(res, 500));
+    try {
+      logger.debug(`Attempting to send updates to Figma file ${fileId}`);
+      logger.debug(updates);  // Detailed log of updates
 
-    logger.info(`[FigmaService] Successfully updated Figma file ${fileId}`);
-    return true;
+      await new Promise(res => setTimeout(res, 500));
+
+      logger.info(`Update applied to file ${fileId} successfully`);
+      return true;
+    } catch (error: any) {
+      logger.error(`Error in updating Figma file ${fileId}: ${error.message}`);
+      throw error;
+    }
   }
 }
 
 export default new FigmaService();
+

@@ -12,7 +12,9 @@ import {
     CampaignListOut,
     CampaignGetOut,
 } from "../interfaces/campaign.interface";
-import logger from "../config/logger"; // Winston logger
+import createLogger from "../config/logger";
+
+const logger = createLogger(module);
 
 class CampaignService {
     public create(data: CampaignIn): Promise<CampaignCreateOut> {
