@@ -6,7 +6,9 @@ import {
   type S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
-import logger from '../config/logger';
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 type UploadBody = Buffer | Uint8Array | string;
 

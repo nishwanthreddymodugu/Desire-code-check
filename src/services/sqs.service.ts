@@ -4,7 +4,9 @@ import {
   SQSClient,
   type SQSClientConfig,
 } from '@aws-sdk/client-sqs';
-import logger from '../config/logger';
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 class SQSService {
   private client: SQSClient;
