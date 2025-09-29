@@ -43,7 +43,6 @@
     "sequelize-cli": "^6.6.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "ts-jest": "^29.2.5",
     "typescript": "^5.4.5",
     "umzug": "^3.8.1"
   }

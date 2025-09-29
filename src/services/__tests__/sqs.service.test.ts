@@ -9,7 +9,7 @@ const mockLogger = {
 
 jest.mock('../../config/logger', () => ({
   __esModule: true,
-  default: mockLogger,
+  default: () => mockLogger,
 }));
 
 jest.mock('@aws-sdk/client-sqs', () => {
