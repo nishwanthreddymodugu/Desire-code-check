@@ -53,13 +53,12 @@ class SearchService {
         const mustClauses: object[] = []; // These are for "fuzzy" text search.
         const filterClauses: object[] = []; // These are for exact, fast filtering.
 
-        // If the user provided a general search term (like "summer sale")...
         if (q) {
             mustClauses.push({
                 multi_match: {
                     query: q,
                     fields: ["campaignname", "description"],
-                    fuzziness: "AUTO" // Allows for small typos
+                    fuzziness: "AUTO" 
                 }
             });
         }
@@ -90,7 +89,6 @@ class SearchService {
                 }
             }
         };
-        //logger.info(`Service: Executing Elasticsearch query: ${JSON.stringify({ esQuery: esQuery.body })}`);
         logger.info('Executing Elasticsearch query', { query: esQuery.body });
         // --------------------
         

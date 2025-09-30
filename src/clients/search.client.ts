@@ -7,10 +7,6 @@ const CAMPAIGN_INDEX = 'campaign_search';
 
 class SearchClient {
     
-    /**
-     * Creates the main "card catalog" (the index) if it doesn't already exist.
-     * This is like building the empty library shelves for the first time.
-     */
     public async createCampaignIndex(): Promise<void> {
         const indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
         if (!indexExists) {
@@ -37,7 +33,6 @@ class SearchClient {
      * @param query The complex search plan created by the "Manager" (the Service).
      */
     public async searchCampaigns(query: Record<string, any>): Promise<any> {
-        // Send the search query to Elasticsearch and return the raw results.
         return esClient.search(query);
     }
 }

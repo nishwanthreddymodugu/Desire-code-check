@@ -4,10 +4,7 @@ import { CampaignDocument } from '../interfaces/search.interface';
 
 const SearchRouter = Router();
 
-/**
- * [POST] /api/v1/search/campaign/index/create
- * A one-time setup endpoint to create the Elasticsearch index.
- */
+
 SearchRouter.post('/campaign/index/create', async (req: Request, res: Response, next: NextFunction) => {
     try {
         await SearchService.createCampaignIndex();
@@ -17,14 +14,9 @@ SearchRouter.post('/campaign/index/create', async (req: Request, res: Response, 
     }
 });
 
-/**
- * [POST] /api/v1/search/campaign/add
- * Endpoint to add or update a campaign document in the search index.
- */
 SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const campaignDoc: CampaignDocument = req.body;
-        // Basic validation in the route handler
         if (!campaignDoc.campaignId || !campaignDoc.campaignname) {
             return res.status(400).json({ message: "campaignId and campaignname are required."});
         }
@@ -35,10 +27,6 @@ SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: Nex
     }
 });
 
-/**
- * [GET] /api/v1/search/campaign/search
- * The main endpoint for searching campaigns.
- */
 SearchRouter.get('/campaign/search', async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Basic input validation before delegating to the service
