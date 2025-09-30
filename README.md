@@ -154,8 +154,6 @@ This command connects to your local database, drops all existing project tables 
 ```bash
 docker-compose up -d
 ```
-
-<<<<<<< README.md
 To verify the services are running:
 =======
 ### 2. Seed the Database with Dummy Data
