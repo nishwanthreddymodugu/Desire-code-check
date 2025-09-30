@@ -1,121 +1,146 @@
 Desire AI - Backend Service
 # Desire AI Backend Service
 
-Welcome to the Desire AI Backend Service repository! This project powers the backend for the Desire AI platform, a cutting-edge tool for the marketing campaign industry.
+Welcome to the Desire AI Backend Service repository! This project powers the backend for the Desire AI platform, a cutting-edge tool designed to revolutionize the marketing campaign industry.
 
 ---
 
 ## 🛠️ Tech Stack
+
 - **Runtime**: Node.js (LTS Version Recommended)
 - **Framework**: Express.js
 - **Language**: TypeScript
+- **Primary Database**: PostgreSQL
+- **Search Engine**: Elasticsearch
 - **ORM**: Sequelize with sequelize-typescript
-- **Database**: PostgreSQL
+- **Containerization**: Docker with Docker Compose
+- **Authentication**: JSON Web Tokens (JWT)
 
 ---
 
 ## 🏗️ Project Structure Overview
-The project follows a professional 4-tier architecture designed for clarity, scalability, and separation of concerns:
 
-- **`src/routes/`**: The "web layer." Handles raw HTTP requests and responses. Validates incoming data before passing it to the service layer.
-- **`src/services/`**: The "business logic layer." Contains the core application logic, independent of the web, and orchestrates calls to the DAO.
-- **`src/daos/`**: The "data access layer." Manages all direct database operations for specific models.
-- **`src/interfaces/`**: Defines the data contracts (*In and *Out interfaces) for communication between the routes and services.
-- **`src/models/`**: Contains all Sequelize model definitions, which act as the blueprint for our database tables.
-- **`src/db/`**: Contains the raw `.sql` files used to reset the database schema and seed it with initial data.
-- **`src/scripts/`**: Contains Node.js scripts (e.g., `reset-db.ts` and `seed-db.ts`) that execute the SQL files.
+The project follows a professional 4-tier architecture for clarity, scalability, and separation of concerns:
+
+- `src/routes/`: The "web layer" that handles raw HTTP requests and responses.
+- `src/services/`: The "business logic layer" containing core application logic.
+- `src/daos/`: The "data access layer" for the PostgreSQL database.
+- `src/clients/`: Clients for connecting to external services like Elasticsearch.
+- `src/interfaces/`: Data contracts for communication between layers.
+- `src/models/`: Sequelize model definitions, the blueprint for PostgreSQL tables.
+- `src/db/`: Raw `.sql` files for resetting and seeding the database.
 
 ---
 
 ## 📋 Prerequisites
+
 Before you begin, ensure you have the following installed on your local machine:
 
-1. **Node.js**: The latest LTS version is recommended. [Download here](https://nodejs.org).
-2. **PostgreSQL**: A local PostgreSQL server instance. Use [Postgres.app](https://postgresapp.com) (for Mac) or follow the [official download instructions](https://www.postgresql.org/download/) for your OS.
+1. **Node.js**: The latest LTS version is recommended. [Download here](https://nodejs.org/).
+2. **Docker Desktop**: Required to run local PostgreSQL and Elasticsearch containers. [Download here](https://www.docker.com/products/docker-desktop). Ensure Docker Desktop is running before proceeding.
 
 ---
 
 ## 🚀 Getting Started: Local Setup
 
+This project uses Docker Compose to manage all local development services.
+
 ### 1. Clone the Repository
+
 ```bash
 git clone <your-repository-url>
 cd desire-ai-backend
 ```
 
 ### 2. Install Dependencies
-Install all the necessary packages defined in `package.json`:
+
+Install the Node.js packages for the application:
+
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
-The `.env` file stores your secret keys and database connection string.
 
-#### a. Create the file:
-```bash
-cp .env.example .env
-```
+The `.env` file stores all your local secrets and connection strings.
 
-#### b. Edit the file:
-Open the new `.env` file and set the `DB_URL`. For a standard local PostgreSQL installation, your URL will look like this (replace `your_password` and `your_database_name` with your credentials):
-```env
-# .env file example
-PORT=8080
-DB_URL="postgresql://postgres:your_password@localhost:5432/your_database_name"
-```
+1. Create the file:
 
----
+    ```bash
+    cp .env.example .env
+    ```
 
-## 🛠️ Database Setup (Crucial Step)
-This project uses SQL scripts to manage the database schema and seed data. Run these commands in the correct order:
+2. Verify the contents: Open the new `.env` file. For local Docker-based development, the default values are pre-configured:
 
-### 1. Reset the Database Schema
-This command connects to your local database, drops all existing project tables (if they exist), and recreates them from scratch based on `src/db/01-schema.sql`:
-```bash
-npm run db:reset
-```
-
-### 2. Seed the Database with Dummy Data
-After the tables are created, populate your database with sample data using:
-```bash
-npm run db:seed
-```
-
-Your database is now fully set up and ready for development.
+    ```env
+    NODE_ENV=development
+    PORT=8080
+    DB_URL="postgresql://desire_user:desire_password@localhost:5432/desire_db"
+    ELASTICSEARCH_URL="http://localhost:9200"
+    ```
 
 ---
 
-## ▶️ Running the Application
-Start the server using `nodemon`, which automatically restarts when you save a file:
+## 🐳 Running the Local Environment
+
+The entire local environment is managed through Docker and npm scripts.
+
+### 1. Start the Docker Services (PostgreSQL & Elasticsearch)
+
+Run the following command to start the services:
+
+```bash
+docker-compose up -d
+```
+
+To verify the services are running:
+
+- Open the Docker Desktop application. You should see two containers running: `desire_ai_db` and `desire_ai_search`.
+- Alternatively, run `docker ps` in your terminal to see the running containers.
+
+### 2. Set Up the Database
+
+With the database container running, create the tables and populate them with data:
+
+1. **Reset the Schema**: This command runs the `01-schema.sql` file:
+
+    ```bash
+    npm run db:reset
+    ```
+
+2. **Seed the Data**: This command runs the `02-seed.sql` file:
+
+    ```bash
+    npm run db:seed
+    ```
+
+### 3. Set Up the Search Index
+
+Create the Elasticsearch index and populate it with data:
+
+1. **Create the Index**: Test this endpoint via Postman:
+
+    ```http
+    POST http://localhost:8080/api/v1/search/campaign/index/create
+    ```
+
+2. **Index the Data**: Write a script to read from the PostgreSQL `campaigns` table and send each record to the `POST /api/v1/search/campaign/add` endpoint.
+
+---
+
+## 🚀 Running the Application
+
+Start the Node.js server:
+
 ```bash
 npm run dev
 ```
 
-You should see the following output in your terminal, confirming that everything is working:
-```
+You should see the following output:
+
+```plaintext
 ✅ Database connection established.
 🚀 Server running on http://localhost:8080
 ```
 
-## 📝 Logging
-
-This project uses Winston with log rotation to handle application logs.
-
-After installing project dependencies, run:
-
-```bash
-npm install winston winston-daily-rotate-file
-```
-
-Added daily rotating file transport with hourly rotation (YYYY-MM-DD-HH) and 7-day retention.
-Integrated logger in services, routes, DAOs, scripts, main server, and database for consistent logging.
-
-Example Log Output
-```
-[2025-09-23 12:54:31] [server.ts] INFO: 🚀 Server running on http://localhost:8080
-[2025-09-23 12:54:53] [asset.service.ts] INFO: Returned 2 assets for templateId: 2
-```
-Log File Location:  logs/app-YYYY-MM-DD-HH.log
-
-Make sure the logs/ folder exists, or Winston will create it automatically.
+---

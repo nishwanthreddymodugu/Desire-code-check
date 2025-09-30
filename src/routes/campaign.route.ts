@@ -4,9 +4,9 @@ import { CampaignIn } from '../interfaces/campaign.interface';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
-const router = Router();
+const CampaignRouter = Router();
 
-router.post('/create', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
 
@@ -35,7 +35,7 @@ router.post('/create', async (req: Request, res: Response, next: NextFunction) =
   }
 });
 
-router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const campaigns = await CampaignService.list(req.query);
     res.status(200).json(campaigns);
@@ -46,7 +46,7 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const campaignId = Number(req.params.campaignId);
     if (isNaN(campaignId)) {
@@ -64,4 +64,4 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
   }
 });
 
-export default router;
+export default CampaignRouter;

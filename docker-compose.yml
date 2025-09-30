@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: desire_ai_db
+    restart: always
+    environment:
+      POSTGRES_USER: desire_user
+      POSTGRES_PASSWORD: desire_password
+      POSTGRES_DB: desire_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  search:
+    image: elasticsearch:8.11.3 
+    container_name: desire_ai_search
+    restart: always
+    environment:
+      - discovery.type=single-node
+   
+      - xpack.security.enabled=false
+    ports:
+  
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+volumes:
+  postgres-data:
+  elasticsearch-data:
