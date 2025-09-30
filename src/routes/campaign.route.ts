@@ -9,6 +9,16 @@ const CampaignRouter = Router();
 CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
+    //const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
+    if (!campaignname || !verticalId || !templateId || !assets) {
+      return res.status(400).json({ 
+        error: "Bad Request",
+        message: "Missing required fields. Body must include campaignname, verticalId, templateId, and an assets array."
+      });
+    }
+    if (!Array.isArray(assets) || assets.length === 0) {
+      return res.status(400).json({ message: "'assets' array cannot be empty." });
+    }
 
     const campaignIn: CampaignIn = {
       campaignname,
@@ -23,7 +33,8 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
     const campaignOut = await CampaignService.create(campaignIn);
     res.status(201).json(campaignOut);
   } catch (error: any) {
-    logger.error(`${error.message}`);
+    //logger.error(`${error.message}`);
+    logger.error(`Route Error in /campaigns/create: ${error.message}`);
     let status = 500;
     const message = error.message || 'Internal Server Error';
 

@@ -22,7 +22,34 @@ class SearchService {
      */
     public async search(queryParams: any): Promise<any[]> {
         const { q, fromdate, todate, verticalId, status } = queryParams;
-        
+        // Basic validation/coercion of inputs
+        let verticalIdNumber: number | undefined;
+        if (verticalId !== undefined) {
+            const n = Number(verticalId);
+            if (!Number.isFinite(n)) {
+                throw new Error("Validation failed: 'verticalId' must be a number.");
+            }
+            verticalIdNumber = n;
+        }
+        let fromDateObj: Date | undefined;
+        let toDateObj: Date | undefined;
+        if (fromdate !== undefined) {
+            const d = new Date(fromdate);
+            if (isNaN(d.getTime())) {
+                throw new Error("Validation failed: 'fromdate' is not a valid date.");
+            }
+            fromDateObj = d;
+        }
+        if (todate !== undefined) {
+            const d = new Date(todate);
+            if (isNaN(d.getTime())) {
+                throw new Error("Validation failed: 'todate' is not a valid date.");
+            }
+            toDateObj = d;
+        }
+        if (fromDateObj && toDateObj && fromDateObj > toDateObj) {
+            throw new Error("Validation failed: 'fromdate' cannot be later than 'todate'.");
+        }
         const mustClauses: object[] = []; // These are for "fuzzy" text search.
         const filterClauses: object[] = []; // These are for exact, fast filtering.
 
@@ -41,12 +68,12 @@ class SearchService {
         if (status) {
             filterClauses.push({ term: { "status": status } });
         }
-        if (verticalId) {
-            filterClauses.push({ term: { "verticalId": Number(verticalId) } });
+        if (verticalIdNumber !== undefined) {
+            filterClauses.push({ term: { "verticalId": verticalIdNumber } });
         }
         const fromDateRange: any = {};
-        if (fromdate) fromDateRange.gte = new Date(fromdate);
-        if (todate) fromDateRange.lte = new Date(todate);
+        if (fromDateObj) fromDateRange.gte = fromDateObj;
+        if (toDateObj) fromDateRange.lte = toDateObj;
         if (Object.keys(fromDateRange).length > 0) {
             filterClauses.push({ range: { fromdate: fromDateRange } });
         }

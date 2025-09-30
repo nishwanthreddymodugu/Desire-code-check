@@ -41,7 +41,21 @@ SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: Nex
  */
 SearchRouter.get('/campaign/search', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // The route handler passes the raw query params to the service.
+        // Basic input validation before delegating to the service
+        const { verticalId, fromdate, todate } = req.query as Record<string, any>;
+        if (verticalId !== undefined && !Number.isFinite(Number(verticalId))) {
+            return res.status(400).json({ message: "'verticalId' must be a number." });
+        }
+        if (fromdate !== undefined && isNaN(new Date(fromdate).getTime())) {
+            return res.status(400).json({ message: "'fromdate' is not a valid date." });
+        }
+        if (todate !== undefined && isNaN(new Date(todate).getTime())) {
+            return res.status(400).json({ message: "'todate' is not a valid date." });
+        }
+        if (fromdate && todate && new Date(fromdate) > new Date(todate)) {
+            return res.status(400).json({ message: "'fromdate' cannot be later than 'todate'." });
+        }
+
         const results = await SearchService.search(req.query);
         res.status(200).json(results);
     } catch (error) {

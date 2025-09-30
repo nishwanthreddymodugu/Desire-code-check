@@ -15,6 +15,7 @@ export class Campaign extends Model<InferAttributes<Campaign>, InferCreationAttr
 
   @AllowNull(false)
   @Column(DataType.STRING(150))
+  @Column({ type: DataType.STRING(150), unique: true })
   declare campaignName: string;
 
   @Column(DataType.TEXT)

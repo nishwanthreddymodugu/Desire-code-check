@@ -11,42 +11,148 @@ import createLogger from '../config/logger';
 
 const logger = createLogger(module);
 
+// class CampaignService {
+//   // Create a campaign
+//   public create(data: CampaignIn): Promise<CampaignCreateOut> {
+//     return new Promise(async (resolve, reject) => {
+//       const transaction = await sequelize.transaction();
+//       try {
+//         logger.debug(`Attempting to create campaign: ${data.campaignname}`);
+//         if (!data.campaignname || data.campaignname.trim() === '') {
+//           return reject(new Error("Validation failed: campaignname is required and cannot be empty."));
+//       }
+
+//       // 2. Check if a campaign with the same name already exists.
+//       const existingCampaign = await CampaignDAO.findByName(data.campaignname);
+//       if (existingCampaign) {
+//           return reject(new Error(`A campaign with the name '${data.campaignname}' already exists.`));
+//       }
+//         const [template, originalAssets] = await Promise.all([
+//           TemplateDAO.findById(data.templateId),
+//           AssetDAO.list({ where: { assetId: data.assets } }),
+//         ]);
+
+//         if (!template) {
+//           await transaction.rollback();
+//           return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+//         }
+//         if (template.verticalId !== data.verticalId) {
+//           await transaction.rollback();
+//           return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
+//         }
+
+//         const foundAssetIds = originalAssets.map(a => a.assetId);
+//         const missingAssetIds = data.assets.filter(id => !foundAssetIds.includes(id));
+//         if (missingAssetIds.length > 0) {
+//           await transaction.rollback();
+//           return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`));
+//         }
+
+//         for (const asset of originalAssets) {
+//           if (!asset.figmaId) {
+//             await transaction.rollback();
+//             return reject(new Error(`Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`));
+//           }
+//         }
+
+//         const campaignData: CreationAttributes<Campaign> = {
+//           campaignName: data.campaignname,
+//           description: data.description,
+//           fromDate: new Date(data.fromdate),
+//           toDate: new Date(data.todate),
+//           templateId: template.templateId,
+//           verticalId: template.verticalId,
+//           status: 'draft',
+//         };
+
+//         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
+
+//         // Clone assets in Figma
+//         const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
+//         const clonedFigmaIds = await Promise.all(clonePromises);
+
+//         const campaignAssetsToCreate = originalAssets.map((asset, index) => ({
+//           campaignId: newCampaign.campaignId,
+//           assetId: asset.assetId,
+//           assetName: asset.assetName,
+//           clonedFigmaId: clonedFigmaIds[index].clonedFileId,
+//         }));
+
+//         const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
+
+//         await transaction.commit();
+//         logger.info(`Campaign created successfully: ${newCampaign.campaignName} (ID: ${newCampaign.campaignId})`);
+
+//         resolve({
+//           campaignId: newCampaign.campaignId,
+//           campaignname: newCampaign.campaignName,
+//           description: newCampaign.description,
+//           fromdate: newCampaign.fromDate,
+//           todate: newCampaign.toDate,
+//           verticalId: newCampaign.verticalId,
+//           templateId: newCampaign.templateId,
+//           assets: createdAssets.map(asset => asset.assetId),
+//         });
+//       } catch (error: any) {
+//         await transaction.rollback();
+//         reject(error);
+//       }
+//     });
+//   }
+
 class CampaignService {
-  // Create a campaign
   public create(data: CampaignIn): Promise<CampaignCreateOut> {
     return new Promise(async (resolve, reject) => {
       const transaction = await sequelize.transaction();
       try {
         logger.debug(`Attempting to create campaign: ${data.campaignname}`);
 
+        // Validation for campaign name
+        if (!data.campaignname || data.campaignname.trim() === '') {
+          return reject(new Error("Validation failed: campaignname is required and cannot be empty.")); // Highlighted change: Added validation for empty campaign names
+        }
+
+        // Check if a campaign with the same name already exists
+        const existingCampaign = await CampaignDAO.findByName(data.campaignname);
+        if (existingCampaign) {
+          return reject(new Error(`A campaign with the name '${data.campaignname}' already exists.`)); // Highlighted change: Added duplicate name check
+        }
+
+        // Fetch template and assets in parallel
         const [template, originalAssets] = await Promise.all([
           TemplateDAO.findById(data.templateId),
           AssetDAO.list({ where: { assetId: data.assets } }),
         ]);
 
+        // Validate template existence
         if (!template) {
           await transaction.rollback();
-          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`)); // Highlighted change: Added template existence validation
         }
+
+        // Validate template belongs to the correct vertical
         if (template.verticalId !== data.verticalId) {
           await transaction.rollback();
-          return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
+          return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`)); // Highlighted change: Added vertical validation
         }
 
-        const foundAssetIds = originalAssets.map(a => a.assetId);
-        const missingAssetIds = data.assets.filter(id => !foundAssetIds.includes(id));
+        // Validate all asset IDs exist
+        const foundAssetIds = originalAssets.map((a) => a.assetId);
+        const missingAssetIds = data.assets.filter((id) => !foundAssetIds.includes(id));
         if (missingAssetIds.length > 0) {
           await transaction.rollback();
-          return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`));
+          return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`)); // Highlighted change: Added asset existence validation
         }
 
+        // Validate all assets have a `figmaId`
         for (const asset of originalAssets) {
           if (!asset.figmaId) {
             await transaction.rollback();
-            return reject(new Error(`Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`));
+            return reject(new Error(`Asset '${asset.assetName}' (ID: ${asset.assetId}) is missing a figmaId.`)); // Highlighted change: Added figmaId validation
           }
         }
 
+        // Create the campaign
         const campaignData: CreationAttributes<Campaign> = {
           campaignName: data.campaignname,
           description: data.description,
@@ -56,25 +162,26 @@ class CampaignService {
           verticalId: template.verticalId,
           status: 'draft',
         };
-
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
 
         // Clone assets in Figma
-        const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
+        const clonePromises = originalAssets.map((asset) => figmaService.cloneFile(asset.figmaId!));
         const clonedFigmaIds = await Promise.all(clonePromises);
 
+        // Create campaign assets
         const campaignAssetsToCreate = originalAssets.map((asset, index) => ({
           campaignId: newCampaign.campaignId,
           assetId: asset.assetId,
           assetName: asset.assetName,
           clonedFigmaId: clonedFigmaIds[index].clonedFileId,
         }));
-
         const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
 
+        // Commit the transaction
         await transaction.commit();
         logger.info(`Campaign created successfully: ${newCampaign.campaignName} (ID: ${newCampaign.campaignId})`);
 
+        // Resolve with the created campaign details
         resolve({
           campaignId: newCampaign.campaignId,
           campaignname: newCampaign.campaignName,
@@ -83,15 +190,16 @@ class CampaignService {
           todate: newCampaign.toDate,
           verticalId: newCampaign.verticalId,
           templateId: newCampaign.templateId,
-          assets: createdAssets.map(asset => asset.assetId),
+          assets: createdAssets.map((asset) => asset.assetId),
         });
       } catch (error: any) {
+        // Rollback the transaction on error
         await transaction.rollback();
+        logger.error(`Failed to create campaign: ${error.message}`);
         reject(error);
       }
     });
   }
-
   // List campaigns
   public list(filters: any): Promise<CampaignListOut[]> {
     return new Promise(async (resolve, reject) => {
