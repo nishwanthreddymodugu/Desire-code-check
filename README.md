@@ -8,7 +8,6 @@ Welcome to the Desire AI Backend Service repository! This project powers the bac
 
 ## 🛠️ Tech Stack
 
-<<<<<<< README.md
 - **Runtime**: Node.js (LTS Version Recommended)
 - **Framework**: Express.js
 - **Language**: TypeScript
@@ -17,13 +16,11 @@ Welcome to the Desire AI Backend Service repository! This project powers the bac
 - **ORM**: Sequelize with sequelize-typescript
 - **Containerization**: Docker with Docker Compose
 - **Authentication**: JSON Web Tokens (JWT)
-=======
 -   **Runtime**: Node.js (LTS Version Recommended)
 -   **Framework**: Express.js
 -   **Language**: TypeScript
 -   **ORM**: Sequelize with sequelize-typescript
 -   **Database**: PostgreSQL
->>>>>>> README.md
 
 ---
 
@@ -50,7 +47,6 @@ The project follows a professional 4-tier architecture designed for clarity, sca
 -   **`src/models/`**: Contains all Sequelize model definitions, which act as the blueprint for our database tables.
 -   **`src/db/`**: Contains the raw `.sql` files used to reset the database schema and seed it with initial data.
 -   **`src/scripts/`**: Contains Node.js scripts (e.g., `reset-db.ts` and `seed-db.ts`) that execute the SQL files.
->>>>>>> README.md
 
 ---
 
@@ -76,18 +72,15 @@ cd desire-ai-backend
 
 ### 2. Install Dependencies
 
-<<<<<<< README.md
 Install the Node.js packages for the application:
 =======
 Install all the necessary packages defined in `package.json`:
->>>>>>> README.md
 
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
-<<<<<<< README.md
 
 The `.env` file stores all your local secrets and connection strings.
 
@@ -116,7 +109,6 @@ The entire local environment is managed through Docker and npm scripts.
 
 Run the following command to start the services:
 
-=======
 
 The `.env` file stores your secret keys and database connection string.
 
@@ -159,7 +151,6 @@ This project uses SQL scripts to manage the database schema and seed data. Run t
 
 This command connects to your local database, drops all existing project tables (if they exist), and recreates them from scratch based on `src/db/01-schema.sql`:
 
->>>>>>> README.md
 ```bash
 docker-compose up -d
 ```
@@ -174,7 +165,6 @@ After the tables are created, populate your database with sample data using:
 ```bash
 npm run db:seed
 ```
->>>>>>> README.md
 
 - Open the Docker Desktop application. You should see two containers running: `desire_ai_db` and `desire_ai_search`.
 - Alternatively, run `docker ps` in your terminal to see the running containers.
@@ -220,8 +210,6 @@ Create the Elasticsearch index and populate it with data:
 2. **Index the Data**: Write a script to read from the PostgreSQL `campaigns` table and send each record to the `POST /api/v1/search/campaign/add` endpoint.
 
 ---
-
-<<<<<<< README.md
 ## 🚀 Running the Application
 
 Start the Node.js server:
@@ -229,28 +217,19 @@ Start the Node.js server:
 ## ▶️ Running the Application
 
 Start the server using `nodemon`, which automatically restarts when you save a file:
->>>>>>> README.md
 
 ```bash
 npm run dev
 ```
-
-<<<<<<< README.md
 You should see the following output:
 
-```plaintext
-=======
 You should see the following output in your terminal, confirming that everything is working:
 
-```
->>>>>>> README.md
+
 ✅ Database connection established.
 🚀 Server running on http://localhost:8080
 ```
 
-<<<<<<< README.md
----
-=======
 ## 📝 Logging
 
 This project uses Winston with log rotation to handle application logs.
@@ -274,4 +253,3 @@ Example Log Output
 Log File Location: logs/app-YYYY-MM-DD-HH.log
 
 Make sure the logs/ folder exists, or Winston will create it automatically.
->>>>>>> README.md
