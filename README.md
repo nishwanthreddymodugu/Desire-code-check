@@ -25,18 +25,6 @@ Welcome to the Desire AI Backend Service repository! This project powers the bac
 ---
 
 ## 🏗️ Project Structure Overview
-<<<<<<< README.md
-
-The project follows a professional 4-tier architecture for clarity, scalability, and separation of concerns:
-
-- `src/routes/`: The "web layer" that handles raw HTTP requests and responses.
-- `src/services/`: The "business logic layer" containing core application logic.
-- `src/daos/`: The "data access layer" for the PostgreSQL database.
-- `src/clients/`: Clients for connecting to external services like Elasticsearch.
-- `src/interfaces/`: Data contracts for communication between layers.
-- `src/models/`: Sequelize model definitions, the blueprint for PostgreSQL tables.
-- `src/db/`: Raw `.sql` files for resetting and seeding the database.
-=======
 
 The project follows a professional 4-tier architecture designed for clarity, scalability, and separation of concerns:
 
@@ -44,6 +32,7 @@ The project follows a professional 4-tier architecture designed for clarity, sca
 -   **`src/services/`**: The "business logic layer." Contains the core application logic, independent of the web, and orchestrates calls to the DAO.
 -   **`src/daos/`**: The "data access layer." Manages all direct database operations for specific models.
 -   **`src/interfaces/`**: Defines the data contracts (*In and *Out interfaces) for communication between the routes and services.
+-   `src/clients/`: Clients for connecting to external services like Elasticsearch.
 -   **`src/models/`**: Contains all Sequelize model definitions, which act as the blueprint for our database tables.
 -   **`src/db/`**: Contains the raw `.sql` files used to reset the database schema and seed it with initial data.
 -   **`src/scripts/`**: Contains Node.js scripts (e.g., `reset-db.ts` and `seed-db.ts`) that execute the SQL files.
@@ -82,34 +71,6 @@ npm install
 
 ### 3. Configure Environment Variables
 
-The `.env` file stores all your local secrets and connection strings.
-
-1. Create the file:
-
-    ```bash
-    cp .env.example .env
-    ```
-
-2. Verify the contents: Open the new `.env` file. For local Docker-based development, the default values are pre-configured:
-
-    ```env
-    NODE_ENV=development
-    PORT=8080
-    DB_URL="postgresql://desire_user:desire_password@localhost:5432/desire_db"
-    ELASTICSEARCH_URL="http://localhost:9200"
-    ```
-
----
-
-## 🐳 Running the Local Environment
-
-The entire local environment is managed through Docker and npm scripts.
-
-### 1. Start the Docker Services (PostgreSQL & Elasticsearch)
-
-Run the following command to start the services:
-
-
 The `.env` file stores your secret keys and database connection string.
 
 #### a. Create the file:
@@ -143,41 +104,18 @@ IMAGE_GEN_QUEUE=local-desire-image-request-queue
 
 ---
 
-## 🛠️ Database Setup (Crucial Step)
+## 🐳 Running the Local Environment
 
-This project uses SQL scripts to manage the database schema and seed data. Run these commands in the correct order:
+The entire local environment is managed through Docker and npm scripts.
 
-### 1. Reset the Database Schema
+### 1. Start the Docker Services (PostgreSQL & Elasticsearch)
 
-This command connects to your local database, drops all existing project tables (if they exist), and recreates them from scratch based on `src/db/01-schema.sql`:
+Run the following command to start the services:
 
 ```bash
 docker-compose up -d
 ```
-To verify the services are running:
-=======
-### 2. Seed the Database with Dummy Data
-
-After the tables are created, populate your database with sample data using:
-
-```bash
-npm run db:seed
-```
-
-- Open the Docker Desktop application. You should see two containers running: `desire_ai_db` and `desire_ai_search`.
-- Alternatively, run `docker ps` in your terminal to see the running containers.
-3. Set Up the Search Index
-
-Create the Elasticsearch index and populate it with data:
-
-1. **Create the Index**: Test this endpoint via Postman:
-
-    ```http
-    POST http://localhost:8080/api/v1/search/campaign/index/create
-    ```
-
-2. **Index the Data**: Write a script to read from the PostgreSQL `campaigns` table and send each record to the `POST /api/v1/search/campaign/add` endpoint.
-
+---
 
 ### 2. Set Up the Database
 
