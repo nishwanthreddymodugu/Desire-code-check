@@ -42,7 +42,9 @@ CREATE TABLE "assets" (
     "updatedBy" VARCHAR(100),
     "deleted" BOOLEAN DEFAULT FALSE,
     "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+    "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "prod_image_width" INTEGER DEFAULT 200,   
+    "prod_image_height" INTEGER DEFAULT 200  
 );
 
 -- Create campaigns table
@@ -76,5 +78,9 @@ CREATE TABLE "campaignassets" (
     PRIMARY KEY ("campaignId", "assetId")
 );
 
-ALTER TABLE campaigns
-ADD UNIQUE ("campaignName");
+-- Add columns for product image dimensions to existing assets table
+ALTER TABLE "assets"
+ADD COLUMN IF NOT EXISTS "prod_image_width" INTEGER DEFAULT 200;
+
+ALTER TABLE "assets"
+ADD COLUMN IF NOT EXISTS "prod_image_height" INTEGER DEFAULT 200;
