@@ -79,6 +79,9 @@ CREATE TABLE "campaignassets" (
 );
 
 -- Add columns for product image dimensions to existing assets table
+ALTER TABLE campaigns
+ADD UNIQUE ("campaignName");
+
 ALTER TABLE "assets"
 ADD COLUMN IF NOT EXISTS "prod_image_width" INTEGER DEFAULT 200;
 
