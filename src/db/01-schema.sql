@@ -75,3 +75,6 @@ CREATE TABLE "campaignassets" (
     "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY ("campaignId", "assetId")
 );
+
+ALTER TABLE campaigns
+ADD UNIQUE ("campaignName");

@@ -1,6 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import SearchService from '../services/search.service';
 import { CampaignDocument } from '../interfaces/search.interface';
+import createLogger from '../config/logger';
+
+const logger = createLogger(module);
 
 const SearchRouter = Router();
 
@@ -9,8 +12,15 @@ SearchRouter.post('/campaign/index/create', async (req: Request, res: Response, 
     try {
         await SearchService.createCampaignIndex();
         res.status(200).json({ message: "Campaign search index created successfully." });
-    } catch (error) {
-        next(error);
+    } catch (error: any) {
+        logger.error(`Route Error in /campaign/index/create: ${error.message}`);
+        let status = 500;
+        const message = error.message || 'Internal Server Error';
+        
+        // Check for specific error types
+        if (message.includes('Failed to create campaign index')) status = 500;
+        
+        res.status(status).json({ message });
     }
 });
 
@@ -22,8 +32,15 @@ SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: Nex
         }
         await SearchService.addCampaignToIndex(campaignDoc);
         res.status(200).json({ message: `Campaign ${campaignDoc.campaignId} indexed successfully.` });
-    } catch (error) {
-        next(error);
+    } catch (error: any) {
+        logger.error(`Route Error in /campaign/add: ${error.message}`);
+        let status = 500;
+        const message = error.message || 'Internal Server Error';
+        
+        // Check for specific error types
+        if (message.includes('Failed to add campaign to index')) status = 500;
+        
+        res.status(status).json({ message });
     }
 });
 
@@ -46,8 +63,16 @@ SearchRouter.get('/campaign/search', async (req: Request, res: Response, next: N
 
         const results = await SearchService.search(req.query);
         res.status(200).json(results);
-    } catch (error) {
-        next(error);
+    } catch (error: any) {
+        logger.error(`Route Error in /campaign/search: ${error.message}`);
+        let status = 500;
+        const message = error.message || 'Internal Server Error';
+        
+        // Check for specific error types
+        if (message.includes('Validation failed:')) status = 400;
+        else if (message.includes('Search operation failed:')) status = 500;
+        
+        res.status(status).json({ message });
     }
 });
 

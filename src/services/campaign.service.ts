@@ -22,12 +22,6 @@ class CampaignService {
           return reject(new Error("Validation failed: campaignname is required and cannot be empty.")); // Highlighted change: Added validation for empty campaign names
         }
 
-        // Check if a campaign with the same name already exists
-        const existingCampaign = await CampaignDAO.findByName(data.campaignname);
-        if (existingCampaign) {
-          return reject(new Error(`A campaign with the name '${data.campaignname}' already exists.`)); // Highlighted change: Added duplicate name check
-        }
-
         // Fetch template and assets in parallel
         const [template, originalAssets] = await Promise.all([
           TemplateDAO.findById(data.templateId),

@@ -37,14 +37,7 @@ class CampaignDAO {
         }
     }
 
-    /**
-     * Finds a single campaign by its unique name.
-     * @param name The name of the campaign to find.
-     */
-    public async findByName(name: string): Promise<Campaign | null> {
-        return Campaign.findOne({ where: { campaignName: name } });
-    }
-
+    
     public async list(options: FindOptions): Promise<Campaign[]> {
         try {
             const campaigns = await Campaign.findAll(options);

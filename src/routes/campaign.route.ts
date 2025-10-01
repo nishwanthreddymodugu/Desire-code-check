@@ -9,7 +9,6 @@ const CampaignRouter = Router();
 CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
-    //const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
     if (!campaignname || !verticalId || !templateId || !assets) {
       return res.status(400).json({ 
         error: "Bad Request",
@@ -33,13 +32,16 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
     const campaignOut = await CampaignService.create(campaignIn);
     res.status(201).json(campaignOut);
   } catch (error: any) {
-    //logger.error(`${error.message}`);
     logger.error(`Route Error in /campaigns/create: ${error.message}`);
     let status = 500;
     const message = error.message || 'Internal Server Error';
 
     if (/required|invalid/i.test(message)) status = 400;
-    else if (/already exists/i.test(message)) status = 409;
+    else if (error.name === 'SequelizeUniqueConstraintError') {
+      status = 409; 
+      res.status(status).json({ message: `A campaign with the name '${req.body.campaignname}' already exists.` });
+      return;
+    } 
     else if (/not belong to Vertical|not found|does not exist|do not exist/i.test(message)) status = 404;
 
     res.status(status).json({ message });
