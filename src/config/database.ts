@@ -5,6 +5,7 @@ import { Template } from '../models/template';
 import { Asset } from '../models/asset';
 import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
+import { User } from '../models/user';
 import logger from './logger'; // Winston logger
 
 dotenv.config();
@@ -18,7 +19,7 @@ const sequelizeOptions: SequelizeOptions = {
   dialect: 'postgres',
   
   logging: LOGGING_ENABLED ? (msg) => logger.info(`[Sequelize] ${msg}`) : false, 
-  models: [Vertical, Template, Asset, Campaign, CampaignAsset],
+  models: [Vertical, Template, Asset, Campaign, CampaignAsset, User],
   // dialectOptions: {
   //   ssl: {
   //     require: true,

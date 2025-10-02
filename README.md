@@ -1,4 +1,4 @@
-Desire AI - Backend Service
+okDesire AI - Backend Service
 # Desire AI Backend Service
 
 Welcome to the Desire AI Backend Service repository! This project powers the backend for the Desire AI platform, a cutting-edge tool for the marketing campaign industry.
@@ -97,3 +97,24 @@ You should see the following output in your terminal, confirming that everything
 ✅ Database connection established.
 🚀 Server running on http://localhost:8080
 ```
+
+---
+
+## 🔐 Auth & ID strategy
+
+- ID strategy: this project uses integer, auto-increment primary keys for database models (no UUID primary keys). That keeps indexes compact and simple. If you need public, non-guessable IDs later we can add a separate `publicId` UUID column while keeping integer PKs internally.
+
+- Auth endpoints (available under `/api/v1/auth`):
+	- `POST /api/v1/auth/register` — body: `{ name, email, password, confirm_password, mobile }` → returns `{ message: 'User <name> created successfully' }` on success.
+	- `POST /api/v1/auth/login` — body: `{ email, password }` → returns `{ message: 'User authenticated', jwt_token: '<accessToken>', refreshToken: '<refreshToken>' }` on success.
+	- `POST /api/v1/auth/refresh` — body: `{ refreshToken }` → returns `{ accessToken, refreshToken }` on success.
+
+Set secrets and expirations in `.env` (examples already present):
+```
+JWT_SECRET=your_generated_access_secret
+JWT_REFRESH_SECRET=your_generated_refresh_secret
+ACCESS_TOKEN_EXPIRES_IN=15m
+REFRESH_TOKEN_EXPIRES_IN=7d
+```
+
+If you'd like me to switch the code to use `JWT_REFRESH_SECRET` (instead of a single `JWT_SECRET`) for signing refresh tokens and align the env var names, I can implement that change.

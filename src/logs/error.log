@@ -1,3 +1,30 @@
 2025-09-20 19:01:18 [error] verticalname already exists, please use another name.
 2025-09-20 19:01:18 [error] Error saving vertical: verticalname already exists, please use another name.
 2025-09-20 19:01:18 [error] Error in POST /vertical/save: verticalname already exists, please use another name.
+2025-09-29 14:39:34 [error] Error: Unexpected token ',', ..."  "name": ,
+  "emai"... is not valid JSON | Stack: SyntaxError: Unexpected token ',', ..."  "name": ,
+  "emai"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\nslk2\desire-ai-backend\node_modules\body-parser\lib\types\json.js:92:19)
+    at C:\Users\nslk2\desire-ai-backend\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:518:28)
+    at IncomingMessage.emit (node:domain:489:12)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+2025-09-30 11:44:18 [error] Invalid refresh token
+2025-09-30 11:47:03 [error] Invalid refresh token
+2025-09-30 12:15:29 [error] Invalid refresh token
+2025-09-30 12:20:23 [error] Invalid refresh token
+2025-10-01 19:17:38 [error] Invalid refresh token
+2025-10-01 19:17:52 [error] Invalid refresh token
+2025-10-01 19:17:59 [error] Invalid refresh token
+2025-10-01 21:44:48 [error] Register error: Email already in use
+2025-10-01 21:44:55 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:44:59 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:45:11 [error] Refresh error: Invalid token
+2025-10-01 21:45:14 [error] Refresh error: Invalid token
+2025-10-01 21:45:35 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:45:37 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan

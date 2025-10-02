@@ -1,0 +1,22 @@
+import { User } from '../models/user';
+import { IUser } from '../interfaces/user.interface';
+
+class UserDAO {
+  async create(userData: IUser): Promise<User> {
+    return User.create(userData);
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return User.findOne({ where: { email } });
+  }
+
+  async findByRefreshToken(refreshToken: string): Promise<User | null> {
+    return User.findOne({ where: { refreshToken } });
+  }
+
+  async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
+    await User.update({ refreshToken }, { where: { id: userId } });
+  }
+}
+
+export default new UserDAO();

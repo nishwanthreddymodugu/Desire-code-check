@@ -111,3 +111,512 @@
 2025-09-20 19:02:38 [info] ✅ Database connection established.
 2025-09-20 19:02:39 [info] ✅ Database synchronized.
 2025-09-20 19:02:39 [info] 🚀 Server running on http://localhost:3001
+2025-09-24 17:28:08 [info] ✅ Database connection established.
+2025-09-24 17:28:08 [info] ✅ Database synchronized.
+2025-09-24 17:28:08 [info] 🚀 Server running on http://localhost:3001
+2025-09-24 17:28:27 [info] GET /
+2025-09-24 17:32:50 [info] --- Starting Database Reset ---
+2025-09-24 17:32:50 [info] Step 1: Reading schema.sql file...
+2025-09-24 17:32:50 [info] Step 2: Executing DROP and CREATE TABLE statements...
+2025-09-24 17:32:50 [info] ✅ Database schema has been successfully reset!
+2025-09-24 17:32:50 [info] Database connection closed.
+2025-09-24 17:33:11 [info] --- Starting Database Seeding ---
+2025-09-24 17:33:11 [info] Step 1: Reading seed.sql file...
+2025-09-24 17:33:11 [info] Step 2: Executing INSERT statements...
+2025-09-24 17:33:11 [info] ✅ Seed data has been successfully inserted!
+2025-09-24 17:33:11 [info] Database connection closed.
+2025-09-24 17:33:21 [info] ✅ Database connection established.
+2025-09-24 17:33:21 [info] ✅ Database synchronized.
+2025-09-24 17:33:21 [info] 🚀 Server running on http://localhost:3001
+2025-09-24 17:58:34 [info] ✅ Database connection established.
+2025-09-24 17:58:34 [info] ✅ Database synchronized.
+2025-09-24 17:58:34 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:42:45 [info] ✅ Database connection established.
+2025-09-27 19:42:46 [info] ✅ Database synchronized.
+2025-09-27 19:42:46 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:54:35 [info] ✅ Database connection established.
+2025-09-27 19:54:35 [info] ✅ Database synchronized.
+2025-09-27 19:54:35 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:56:33 [info] ✅ Database connection established.
+2025-09-27 19:56:34 [info] ✅ Database synchronized.
+2025-09-27 19:56:34 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:57:06 [info] ✅ Database connection established.
+2025-09-27 19:57:07 [info] ✅ Database synchronized.
+2025-09-27 19:57:07 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:57:16 [info] ✅ Database connection established.
+2025-09-27 19:57:16 [info] ✅ Database synchronized.
+2025-09-27 19:57:16 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:57:42 [info] ✅ Database connection established.
+2025-09-27 19:57:42 [info] ✅ Database synchronized.
+2025-09-27 19:57:42 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:58:06 [info] ✅ Database connection established.
+2025-09-27 19:58:07 [info] ✅ Database synchronized.
+2025-09-27 19:58:07 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:58:28 [info] ✅ Database connection established.
+2025-09-27 19:58:28 [info] ✅ Database synchronized.
+2025-09-27 19:58:28 [info] 🚀 Server running on http://localhost:3001
+2025-09-27 19:59:00 [info] ✅ Database connection established.
+2025-09-27 19:59:00 [info] ✅ Database synchronized.
+2025-09-27 19:59:00 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 09:56:57 [info] ✅ Database connection established.
+2025-09-28 09:56:57 [info] ✅ Database synchronized.
+2025-09-28 09:56:57 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 09:59:01 [info] ✅ Database connection established.
+2025-09-28 09:59:01 [info] ✅ Database synchronized.
+2025-09-28 09:59:01 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 10:07:27 [info] ✅ Database connection established.
+2025-09-28 10:07:28 [info] ✅ Database synchronized.
+2025-09-28 10:07:28 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 10:37:42 [info] ✅ Database connection established.
+2025-09-28 10:37:43 [info] ✅ Database synchronized.
+2025-09-28 10:37:43 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 10:42:17 [info] ✅ Database connection established.
+2025-09-28 10:42:17 [info] ✅ Database synchronized.
+2025-09-28 10:42:17 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 11:43:22 [info] ✅ Database connection established.
+2025-09-28 11:43:23 [info] ✅ Database synchronized.
+2025-09-28 11:43:23 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 11:44:55 [info] ✅ Database connection established.
+2025-09-28 11:44:55 [info] ✅ Database synchronized.
+2025-09-28 11:44:55 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 11:45:08 [info] ✅ Database connection established.
+2025-09-28 11:45:09 [info] ✅ Database synchronized.
+2025-09-28 11:45:09 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 11:45:52 [info] ✅ Database connection established.
+2025-09-28 11:45:52 [info] ✅ Database synchronized.
+2025-09-28 11:45:52 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 11:47:33 [info] ✅ Database connection established.
+2025-09-28 11:47:33 [info] ✅ Database synchronized.
+2025-09-28 11:47:33 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 12:03:53 [info] ✅ Database connection established.
+2025-09-28 20:59:58 [info] ✅ Database connection established.
+2025-09-28 20:59:59 [info] ✅ Database synchronized.
+2025-09-28 20:59:59 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 21:22:23 [info] POST /register
+2025-09-28 21:25:59 [info] ✅ Database connection established.
+2025-09-28 21:26:20 [info] ✅ Database connection established.
+2025-09-28 21:26:20 [info] ✅ Database synchronized.
+2025-09-28 21:26:20 [info] 🚀 Server running on http://localhost:3001
+2025-09-28 21:26:51 [info] POST /register
+2025-09-28 21:26:52 [info] POST /register
+2025-09-28 21:27:55 [info] POST /auth/register
+2025-09-28 21:28:46 [info] POST /auth/register
+2025-09-28 21:28:49 [info] POST /auth/register
+2025-09-28 21:29:30 [info] POST /auth/register
+2025-09-28 21:30:15 [info] POST /auth/refresh
+2025-09-28 21:34:33 [info] POST //api/v1/auth/register
+2025-09-28 22:18:12 [info] ✅ Database connection established.
+2025-09-28 22:18:12 [info] ✅ Database synchronized.
+2025-09-28 22:18:12 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 08:59:47 [info] ✅ Database connection established.
+2025-09-29 08:59:47 [info] ✅ Database synchronized.
+2025-09-29 08:59:47 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 14:38:13 [info] ✅ Database connection established.
+2025-09-29 14:38:14 [info] ✅ Database synchronized.
+2025-09-29 14:38:14 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 14:38:43 [info] POST /api/v1/auth/register
+2025-09-29 14:38:43 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 14:38:43 [info] POST /auth/register called with data: {"name":"John Doe","email":"john@example.com","password":"mypassword"}
+2025-09-29 14:38:44 [info] User registered successfully: {"id":1,"email":"john@example.com"}
+2025-09-29 14:39:04 [info] POST /api/v1/auth/register
+2025-09-29 14:39:04 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 14:39:04 [info] POST /auth/register called with data: {"name":"John Doe","email":"john@example.com","password":"mypassword"}
+2025-09-29 14:39:18 [info] POST /api/v1/auth/register
+2025-09-29 14:39:18 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 14:39:18 [info] POST /auth/register called with data: {"name":"","email":"john@example.com","password":"mypassword"}
+2025-09-29 14:39:34 [error] Error: Unexpected token ',', ..."  "name": ,
+  "emai"... is not valid JSON | Stack: SyntaxError: Unexpected token ',', ..."  "name": ,
+  "emai"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\nslk2\desire-ai-backend\node_modules\body-parser\lib\types\json.js:92:19)
+    at C:\Users\nslk2\desire-ai-backend\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\nslk2\desire-ai-backend\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:518:28)
+    at IncomingMessage.emit (node:domain:489:12)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+2025-09-29 14:39:51 [info] POST /api/v1/auth/register
+2025-09-29 14:39:51 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 14:39:51 [info] POST /auth/register called with data: {"name":"sri","email":"john@example.com","password":"mypassword"}
+2025-09-29 14:47:25 [info] ✅ Database connection established.
+2025-09-29 14:47:25 [info] ✅ Database synchronized.
+2025-09-29 14:47:25 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 14:56:16 [info] ✅ Database connection established.
+2025-09-29 14:56:16 [info] ✅ Database synchronized.
+2025-09-29 14:56:16 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 14:56:30 [info] ✅ Database connection established.
+2025-09-29 14:56:30 [info] ✅ Database synchronized.
+2025-09-29 14:56:30 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 14:58:42 [info] ✅ Database connection established.
+2025-09-29 14:58:42 [info] ✅ Database synchronized.
+2025-09-29 14:58:42 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:00:23 [info] ✅ Database connection established.
+2025-09-29 15:00:24 [info] ✅ Database synchronized.
+2025-09-29 15:00:24 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:00:29 [info] ✅ Database connection established.
+2025-09-29 15:00:29 [info] ✅ Database synchronized.
+2025-09-29 15:00:29 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:00:42 [info] ✅ Database connection established.
+2025-09-29 15:00:42 [info] ✅ Database synchronized.
+2025-09-29 15:00:42 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:01:36 [info] ✅ Database connection established.
+2025-09-29 15:01:37 [info] ✅ Database synchronized.
+2025-09-29 15:01:37 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:03:55 [info] ✅ Database connection established.
+2025-09-29 15:03:55 [info] ✅ Database synchronized.
+2025-09-29 15:03:55 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:09:53 [info] ✅ Database connection established.
+2025-09-29 15:09:53 [info] ✅ Database synchronized.
+2025-09-29 15:09:53 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:13:13 [info] ✅ Database connection established.
+2025-09-29 15:13:13 [info] ✅ Database synchronized.
+2025-09-29 15:13:13 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:14:33 [info] ✅ Database connection established.
+2025-09-29 15:14:33 [info] ✅ Database synchronized.
+2025-09-29 15:14:33 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 15:14:46 [info] POST /api/v1/auth/register
+2025-09-29 15:14:46 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 15:14:46 [info] POST /auth/register called with data: {"name":"sri","email":"john@example.com","password":"mypassword"}
+2025-09-29 15:14:46 [info] User registered successfully: john@example.com
+2025-09-29 15:34:12 [info] POST /api/v1/auth/register
+2025-09-29 15:34:12 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 15:34:12 [info] POST /auth/register called with data: {"name":"Sri Lakshmi","email":"srilakshmi@example.com","password":"Password123!","mobile":"9876543210"}
+2025-09-29 15:34:12 [info] User registered successfully: srilakshmi@example.com
+2025-09-29 15:34:58 [info] POST /api/v1/auth/login
+2025-09-29 15:34:58 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 15:34:58 [info] POST /auth/login called with data: {"email":"srilakshmi@example.com","password":"Password123!"}
+2025-09-29 15:34:58 [info] User logged in successfully: srilakshmi@example.com
+2025-09-29 15:35:40 [info] POST /api/v1/auth/refresh-token
+2025-09-29 15:35:40 [info] Incoming Request: POST /api/v1/auth/refresh-token
+2025-09-29 15:36:15 [info] POST /api/v1/auth/refresh-token
+2025-09-29 15:36:15 [info] Incoming Request: POST /api/v1/auth/refresh-token
+2025-09-29 15:36:59 [info] POST /api/v1/auth/logout
+2025-09-29 15:36:59 [info] Incoming Request: POST /api/v1/auth/logout
+2025-09-29 15:39:34 [info] POST /api/v1/auth/refresh-token
+2025-09-29 15:39:34 [info] Incoming Request: POST /api/v1/auth/refresh-token
+2025-09-29 15:39:36 [info] POST /api/v1/auth/refresh-token
+2025-09-29 15:39:36 [info] Incoming Request: POST /api/v1/auth/refresh-token
+2025-09-29 15:49:34 [info] POST /api/v1/auth/logout
+2025-09-29 15:49:34 [info] Incoming Request: POST /api/v1/auth/logout
+2025-09-29 15:49:48 [info] POST /api/v1/auth/login
+2025-09-29 15:49:48 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 15:49:48 [info] POST /auth/login called with data: {"email":"srilakshmi@example.com","password":"Password123!"}
+2025-09-29 15:49:48 [info] User logged in successfully: srilakshmi@example.com
+2025-09-29 18:03:02 [info] POST /api/v1/auth/login
+2025-09-29 18:03:02 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 18:03:02 [info] POST /auth/login called with data: {"email":"srilakshmi@example.com","password":"Password123!"}
+2025-09-29 18:03:02 [info] User logged in successfully: srilakshmi@example.com
+2025-09-29 18:05:58 [info] ✅ Database connection established.
+2025-09-29 18:05:58 [info] ✅ Database synchronized.
+2025-09-29 18:05:58 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 18:06:09 [info] POST /api/v1/auth/login
+2025-09-29 18:06:09 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 18:06:09 [info] POST /auth/login called with data: {"email":"srilakshmi@example.com","password":"Password123"}
+2025-09-29 18:06:30 [info] POST /api/v1/auth/login
+2025-09-29 18:06:30 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 18:06:30 [info] POST /auth/login called with data: {"email":"srii@example.com","password":"Password123"}
+2025-09-29 18:07:52 [info] POST /api/v1/auth/refresh
+2025-09-29 18:07:52 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-29 18:07:52 [info] POST /auth/refresh called
+2025-09-29 18:08:25 [info] POST /api/v1/auth/refresh
+2025-09-29 18:08:25 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-29 18:08:25 [info] POST /auth/refresh called
+2025-09-29 18:09:15 [info] POST /api/v1/auth/register
+2025-09-29 18:09:15 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:09:15 [info] POST /auth/register called with data: {"name":"Sri Lakshmi","email":"srilakshmi@example.com","password":"Password123","confirm_password":"Password123"}
+2025-09-29 18:10:55 [info] POST /api/v1/auth/register
+2025-09-29 18:10:55 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:10:55 [info] POST /auth/register called with data: {"name":"Sri","email":"sri@example.com","password":"123","confirm_password":"123"}
+2025-09-29 18:10:55 [info] User registered successfully: sri@example.com
+2025-09-29 18:19:08 [info] POST /api/v1/auth/register
+2025-09-29 18:19:08 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:19:08 [info] POST /auth/register called with data: {"name":"Sai","email":"sai@gmail.com","password":"4545","confirm_password":"4545","mobile":"9490224566"}
+2025-09-29 18:19:08 [info] User registered successfully: sai@gmail.com
+2025-09-29 18:22:18 [info] ✅ Database connection established.
+2025-09-29 18:22:18 [info] ✅ Database synchronized.
+2025-09-29 18:22:18 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 18:22:26 [info] POST /api/v1/auth/register
+2025-09-29 18:22:26 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:22:26 [info] POST /auth/register called with data: {"name":"Sai","email":"sai@gmail.com","password":"4545","confirm_password":"4545","mobile":"9490224566"}
+2025-09-29 18:22:59 [info] POST /api/v1/auth/register
+2025-09-29 18:22:59 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:22:59 [info] POST /auth/register called with data: {"name":"Sree","email":"sree@gmail.com","password":"1351","confirm_password":"1351","mobile":"9490424566"}
+2025-09-29 18:23:00 [info] User registered successfully: sree@gmail.com
+2025-09-29 18:23:29 [info] POST /api/v1/auth/register
+2025-09-29 18:23:29 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 18:23:29 [info] POST /auth/register called with data: {"name":"Sree","email":"sree@gmail.com","password":"1351","confirm_password":"1351","mobile":"9490424566"}
+2025-09-29 18:25:58 [info] POST /api/v1/auth/login
+2025-09-29 18:25:58 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 18:25:58 [info] POST /auth/login called with data: {"email":"sree@gmail.com","password":"1351"}
+2025-09-29 18:25:59 [info] User logged in successfully: sree@gmail.com
+2025-09-29 18:30:34 [info] ✅ Database connection established.
+2025-09-29 18:30:34 [info] ✅ Database synchronized.
+2025-09-29 18:30:35 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 18:30:39 [info] POST /api/v1/auth/login
+2025-09-29 18:30:39 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 18:30:39 [info] POST /auth/login called with data: {"email":"sree@gmail.com","password":"1351"}
+2025-09-29 18:30:39 [info] User logged in successfully: sree@gmail.com
+2025-09-29 18:33:04 [info] POST /api/v1/auth/refresh
+2025-09-29 18:33:04 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-29 18:33:04 [info] POST /auth/refresh called
+2025-09-29 21:18:12 [info] ✅ Database connection established.
+2025-09-29 21:18:12 [info] ✅ Database synchronized.
+2025-09-29 21:18:12 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 21:31:10 [info] POST /api/v1/auth/register
+2025-09-29 21:31:10 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:31:10 [info] POST /auth/register called with data: {"name":"Sree","email":"sree@gmail.com","password":"1351","confirm_password":"1351","mobile":"9490424566"}
+2025-09-29 21:31:20 [info] POST /api/v1/auth/register
+2025-09-29 21:31:20 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:31:20 [info] POST /auth/register called with data: {"name":"","email":"sree@gmail.com","password":"1351","confirm_password":"1351","mobile":"9490424566"}
+2025-09-29 21:31:47 [info] POST /api/v1/auth/register
+2025-09-29 21:31:47 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:31:47 [info] POST /auth/register called with data: {"name":"ss","email":"ss@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-29 21:31:47 [info] User registered successfully: ss@gmail.com
+2025-09-29 21:32:23 [info] POST /api/v1/auth/register
+2025-09-29 21:32:23 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:32:23 [info] POST /auth/register called with data: {"name":"sas","email":"ss@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-29 21:33:28 [info] POST /api/v1/auth/register
+2025-09-29 21:33:28 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:33:28 [info] POST /auth/register called with data: {"name":"sas","email":"s@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-29 21:33:29 [info] User registered successfully: s@gmail.com
+2025-09-29 21:33:56 [info] POST /api/v1/auth/register
+2025-09-29 21:33:56 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 21:33:56 [info] POST /auth/register called with data: {"name":"sas","email":"f@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-29 21:33:56 [info] User registered successfully: f@gmail.com
+2025-09-29 21:35:11 [info] POST /api/v1/auth/login
+2025-09-29 21:35:11 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 21:35:11 [info] POST /auth/login called with data: {"email":"sas@gmail.com","password":"1111"}
+2025-09-29 21:35:20 [info] POST /api/v1/auth/login
+2025-09-29 21:35:20 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-29 21:35:20 [info] POST /auth/login called with data: {"email":"f@gmail.com","password":"1111"}
+2025-09-29 21:35:20 [info] User logged in successfully: f@gmail.com
+2025-09-29 22:16:01 [info] ✅ Database connection established.
+2025-09-29 22:16:01 [info] ✅ Database synchronized.
+2025-09-29 22:16:01 [info] 🚀 Server running on http://localhost:3001
+2025-09-29 22:16:09 [info] POST /api/v1/auth/refresh
+2025-09-29 22:16:09 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-29 22:16:09 [info] POST /auth/refresh called
+2025-09-29 22:16:16 [info] POST /api/v1/auth/register
+2025-09-29 22:16:16 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-29 22:16:16 [info] POST /auth/register called with data: {"name":"sas","email":"f@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-30 08:50:14 [info] ✅ Database connection established.
+2025-09-30 08:50:14 [info] ✅ Database synchronized.
+2025-09-30 08:50:14 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 08:50:32 [info] POST /api/v1/auth/register
+2025-09-30 08:50:32 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-30 08:50:32 [info] POST /auth/register called with data: {"name":"sas","email":"f@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-30 08:50:49 [info] POST /api/v1/auth/register
+2025-09-30 08:50:49 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-30 08:50:49 [info] POST /auth/register called with data: {"name":"vibha","email":"v@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-30 08:50:49 [info] User registered successfully: v@gmail.com
+2025-09-30 08:51:02 [info] POST /api/v1/auth/login
+2025-09-30 08:51:02 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-30 08:51:02 [info] POST /auth/login called with data: {"email":"v@gmail.com","password":"1111"}
+2025-09-30 08:51:02 [info] User logged in successfully: v@gmail.com
+2025-09-30 09:23:50 [info] POST /api/v1/auth/register
+2025-09-30 09:23:50 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-30 09:23:50 [info] POST /auth/register called with data: {"name":"vibha","email":"v@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-30 09:24:06 [info] POST /api/v1/auth/register
+2025-09-30 09:24:06 [info] Incoming Request: POST /api/v1/auth/register
+2025-09-30 09:24:06 [info] POST /auth/register called with data: {"name":"vibhaa","email":"vibha@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-09-30 09:24:06 [info] User registered successfully: vibha@gmail.com
+2025-09-30 09:24:24 [info] POST /api/v1/auth/login
+2025-09-30 09:24:24 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-30 09:24:24 [info] POST /auth/login called with data: {"email":"vibha@gmail.com","password":"1111"}
+2025-09-30 09:24:24 [info] User logged in successfully: vibha@gmail.com
+2025-09-30 09:24:36 [info] POST /api/v1/auth/login
+2025-09-30 09:24:36 [info] Incoming Request: POST /api/v1/auth/login
+2025-09-30 09:24:36 [info] POST /auth/login called with data: {"email":"vibha@gmail.com","password":"1211"}
+2025-09-30 11:43:35 [info] ✅ Database connection established.
+2025-09-30 11:43:35 [info] ✅ Database synchronized.
+2025-09-30 11:43:35 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 11:44:18 [info] POST /api/v1/auth/refresh
+2025-09-30 11:44:18 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-30 11:44:18 [info] POST /auth/refresh called
+2025-09-30 11:44:18 [error] Invalid refresh token
+2025-09-30 11:47:03 [info] POST /api/v1/auth/refresh
+2025-09-30 11:47:03 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-30 11:47:03 [info] POST /auth/refresh called
+2025-09-30 11:47:03 [error] Invalid refresh token
+2025-09-30 12:15:14 [info] ✅ Database connection established.
+2025-09-30 12:15:14 [info] ✅ Database synchronized.
+2025-09-30 12:15:14 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:15:29 [info] POST /api/v1/auth/refresh
+2025-09-30 12:15:29 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-30 12:15:29 [info] POST /auth/refresh called
+2025-09-30 12:15:29 [error] Invalid refresh token
+2025-09-30 12:20:18 [info] ✅ Database connection established.
+2025-09-30 12:20:18 [info] ✅ Database synchronized.
+2025-09-30 12:20:18 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:20:23 [info] POST /api/v1/auth/refresh
+2025-09-30 12:20:23 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-09-30 12:20:23 [info] POST /auth/refresh called
+2025-09-30 12:20:23 [error] Invalid refresh token
+2025-09-30 12:22:33 [info] ✅ Database connection established.
+2025-09-30 12:22:33 [info] ✅ Database synchronized.
+2025-09-30 12:22:33 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:22:43 [info] ✅ Database connection established.
+2025-09-30 12:22:43 [info] ✅ Database synchronized.
+2025-09-30 12:22:43 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:23:50 [info] ✅ Database connection established.
+2025-09-30 12:23:50 [info] ✅ Database synchronized.
+2025-09-30 12:23:50 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:24:29 [info] ✅ Database connection established.
+2025-09-30 12:24:29 [info] ✅ Database synchronized.
+2025-09-30 12:24:29 [info] 🚀 Server running on http://localhost:3001
+2025-09-30 12:25:20 [info] ✅ Database connection established.
+2025-09-30 12:25:21 [info] ✅ Database synchronized.
+2025-09-30 12:25:21 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 19:17:16 [info] ✅ Database connection established.
+2025-10-01 19:17:17 [info] ✅ Database synchronized.
+2025-10-01 19:17:17 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 19:17:38 [info] POST /api/v1/auth/refresh
+2025-10-01 19:17:38 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 19:17:38 [info] POST /auth/refresh called
+2025-10-01 19:17:38 [error] Invalid refresh token
+2025-10-01 19:17:52 [info] POST /api/v1/auth/refresh
+2025-10-01 19:17:52 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 19:17:52 [info] POST /auth/refresh called
+2025-10-01 19:17:52 [error] Invalid refresh token
+2025-10-01 19:17:59 [info] POST /api/v1/auth/refresh
+2025-10-01 19:17:59 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 19:17:59 [info] POST /auth/refresh called
+2025-10-01 19:17:59 [error] Invalid refresh token
+2025-10-01 19:31:51 [info] ✅ Database connection established.
+2025-10-01 19:31:51 [info] ✅ Database synchronized.
+2025-10-01 19:31:51 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 19:31:57 [info] POST /api/v1/auth/register
+2025-10-01 19:31:57 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-01 19:31:57 [info] POST /auth/register called with data: {"name":"jay","email":"jay@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-01 19:31:57 [info] User registered successfully: jay@gmail.com
+2025-10-01 19:32:15 [info] POST /api/v1/auth/login
+2025-10-01 19:32:15 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 19:32:15 [info] POST /auth/login called with data: {"email":"jay@gmail.com","password":"1211"}
+2025-10-01 19:32:22 [info] POST /api/v1/auth/login
+2025-10-01 19:32:22 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 19:32:22 [info] POST /auth/login called with data: {"email":"jay@gmail.com","password":"1111"}
+2025-10-01 19:32:22 [info] User logged in successfully: jay@gmail.com
+2025-10-01 19:32:42 [info] POST /api/v1/auth/refresh
+2025-10-01 19:32:42 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 19:32:42 [info] POST /auth/refresh called
+2025-10-01 19:32:42 [info] Access token refreshed for: jay@gmail.com
+2025-10-01 21:40:48 [info] ✅ Database connection established.
+2025-10-01 21:40:49 [info] ✅ Database synchronized.
+2025-10-01 21:40:49 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 21:43:23 [info] ✅ Database connection established.
+2025-10-01 21:43:23 [info] ✅ Database synchronized.
+2025-10-01 21:43:23 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 21:44:48 [info] POST /api/v1/auth/register
+2025-10-01 21:44:48 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-01 21:44:48 [info] POST /auth/register called with data: {"name":"jay","email":"jay@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-01 21:44:48 [error] Register error: Email already in use
+2025-10-01 21:44:55 [info] POST /api/v1/auth/login
+2025-10-01 21:44:55 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 21:44:55 [info] POST /auth/login called with data: {"email":"jay@gmail.com","password":"1111"}
+2025-10-01 21:44:55 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:44:59 [info] POST /api/v1/auth/login
+2025-10-01 21:44:59 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 21:44:59 [info] POST /auth/login called with data: {"email":"jay@gmail.com","password":"1111"}
+2025-10-01 21:44:59 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:45:11 [info] POST /api/v1/auth/refresh
+2025-10-01 21:45:11 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 21:45:11 [info] POST /auth/refresh called
+2025-10-01 21:45:11 [error] Refresh error: Invalid token
+2025-10-01 21:45:14 [info] POST /api/v1/auth/refresh
+2025-10-01 21:45:14 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 21:45:14 [info] POST /auth/refresh called
+2025-10-01 21:45:14 [error] Refresh error: Invalid token
+2025-10-01 21:45:26 [info] POST /api/v1/auth/register
+2025-10-01 21:45:26 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-01 21:45:26 [info] POST /auth/register called with data: {"name":"jaya","email":"jaya@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-01 21:45:27 [info] User jaya@gmail.com registered
+2025-10-01 21:45:35 [info] POST /api/v1/auth/login
+2025-10-01 21:45:35 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 21:45:35 [info] POST /auth/login called with data: {"email":"jaya@gmail.com","password":"1111"}
+2025-10-01 21:45:35 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:45:37 [info] POST /api/v1/auth/login
+2025-10-01 21:45:37 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 21:45:37 [info] POST /auth/login called with data: {"email":"jaya@gmail.com","password":"1111"}
+2025-10-01 21:45:37 [error] Login error: "expiresIn" should be a number of seconds or string representing a timespan
+2025-10-01 21:46:34 [info] ✅ Database connection established.
+2025-10-01 21:46:35 [info] ✅ Database synchronized.
+2025-10-01 21:46:35 [info] 🚀 Server running on http://localhost:3001
+2025-10-01 21:46:40 [info] POST /api/v1/auth/login
+2025-10-01 21:46:40 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-01 21:46:40 [info] POST /auth/login called with data: {"email":"jaya@gmail.com","password":"1111"}
+2025-10-01 21:46:41 [info] User logged in successfully: jaya@gmail.com
+2025-10-01 21:47:02 [info] POST /api/v1/auth/refresh
+2025-10-01 21:47:02 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-01 21:47:02 [info] POST /auth/refresh called
+2025-10-01 21:47:03 [info] Access token refreshed for: jaya@gmail.com
+2025-10-02 12:56:34 [info] ✅ Database connection established.
+2025-10-02 12:56:35 [info] ✅ Database synchronized.
+2025-10-02 12:56:35 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 13:04:28 [info] ✅ Database connection established.
+2025-10-02 13:04:28 [info] ✅ Database synchronized.
+2025-10-02 13:04:28 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 13:04:43 [info] ✅ Database connection established.
+2025-10-02 13:04:43 [info] ✅ Database synchronized.
+2025-10-02 13:04:43 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 13:05:14 [info] POST /api/v1/auth/register
+2025-10-02 13:05:14 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-02 13:05:14 [info] POST /auth/register called with data: {"name":"Dhanu","email":"dhanu@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-02 13:05:15 [info] User registered successfully: dhanu@gmail.com
+2025-10-02 13:05:28 [info] POST /api/v1/auth/login
+2025-10-02 13:05:28 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-02 13:05:28 [info] POST /auth/login called with data: {"email":"dhanu@gmail.com","password":"1111"}
+2025-10-02 13:05:28 [info] User logged in successfully: dhanu@gmail.com
+2025-10-02 13:05:54 [info] POST /api/v1/auth/refresh
+2025-10-02 13:05:54 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-02 13:05:54 [info] POST /auth/refresh called
+2025-10-02 13:05:54 [info] Access token refreshed for: dhanu@gmail.com
+2025-10-02 13:57:22 [info] ✅ Database connection established.
+2025-10-02 13:57:22 [info] ✅ Database synchronized.
+2025-10-02 13:57:22 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 13:59:56 [info] ✅ Database connection established.
+2025-10-02 13:59:56 [info] ✅ Database synchronized.
+2025-10-02 13:59:56 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:00:30 [info] POST /api/v1/auth/register
+2025-10-02 14:00:30 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-02 14:00:30 [info] POST /auth/register called with data: {"name":"Dhanuu","email":"dhanuu@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-02 14:00:30 [info] User registered successfully: dhanuu@gmail.com
+2025-10-02 14:00:39 [info] POST /api/v1/auth/login
+2025-10-02 14:00:39 [info] Incoming Request: POST /api/v1/auth/login
+2025-10-02 14:00:39 [info] POST /auth/login called with data: {"email":"dhanuu@gmail.com","password":"1111"}
+2025-10-02 14:00:39 [info] User logged in successfully: dhanuu@gmail.com
+2025-10-02 14:01:06 [info] POST /api/v1/auth/refresh
+2025-10-02 14:01:06 [info] Incoming Request: POST /api/v1/auth/refresh
+2025-10-02 14:01:06 [info] POST /auth/refresh called
+2025-10-02 14:01:06 [info] Access token refreshed for: dhanuu@gmail.com
+2025-10-02 14:01:55 [info] POST /api/v1/auth/register
+2025-10-02 14:01:55 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-02 14:01:55 [info] POST /auth/register called with data: {"name":"Dhanu","email":"dhanu@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-02 14:33:32 [info] ✅ Database connection established.
+2025-10-02 14:33:33 [info] ✅ Database synchronized.
+2025-10-02 14:33:33 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:33:43 [info] ✅ Database connection established.
+2025-10-02 14:33:43 [info] ✅ Database synchronized.
+2025-10-02 14:33:43 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:34:42 [info] ✅ Database connection established.
+2025-10-02 14:34:42 [info] ✅ Database synchronized.
+2025-10-02 14:34:42 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:35:27 [info] ✅ Database connection established.
+2025-10-02 14:35:27 [info] ✅ Database synchronized.
+2025-10-02 14:35:27 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:35:56 [info] ✅ Database connection established.
+2025-10-02 14:35:56 [info] ✅ Database synchronized.
+2025-10-02 14:35:56 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:36:04 [info] ✅ Database connection established.
+2025-10-02 14:36:05 [info] ✅ Database synchronized.
+2025-10-02 14:36:05 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:37:50 [info] ✅ Database connection established.
+2025-10-02 14:37:50 [info] ✅ Database synchronized.
+2025-10-02 14:37:50 [info] 🚀 Server running on http://localhost:3001
+2025-10-02 14:39:02 [info] POST /api/v1/auth/register
+2025-10-02 14:39:02 [info] Incoming Request: POST /api/v1/auth/register
+2025-10-02 14:39:02 [info] POST /auth/register called with data: {"name":"Dhanu","email":"dhanu@gmail.com","password":"1111","confirm_password":"1111","mobile":"9494424566"}
+2025-10-02 14:44:40 [info] ✅ Database connection established.
+2025-10-02 14:44:40 [info] ✅ Database synchronized.
+2025-10-02 14:44:40 [info] 🚀 Server running on http://localhost:3001
