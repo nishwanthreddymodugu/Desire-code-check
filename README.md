@@ -91,7 +91,9 @@ IMAGE_GEN_QUEUE=local-desire-image-request-queue
 Install the following:
 
 Node.js LTS (18+ recommended) and npm
+
 Docker Desktop (to run LocalStack desktop)
+
 AWS CLI v2 (for real AWS accounts)
 
 Once the basics are installed, add the helper CLIs that the project scripts rely on:
