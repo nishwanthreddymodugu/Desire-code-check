@@ -4,7 +4,8 @@ import VerticalDAO from '../daos/vertical.dao';
 import { Template } from '../models/template';
 import { TemplateIn, TemplateOut } from '../interfaces/template.interface';
 import createLogger from '../config/logger';
-
+import fs from 'fs';
+import s3Service from './s3.service';
 const logger = createLogger(module);
 
 class TemplateService {
@@ -89,6 +90,45 @@ class TemplateService {
       }
     });
   }
-}
 
+  public async uploadImage(
+    verticalId: string,
+    templateId: string,
+    file: Express.Multer.File
+  ): Promise<{ verticalId: string; templateId: string; filename: string }> {
+    if (!verticalId) throw new Error('verticalId is required');
+    if (!templateId) throw new Error('templateId is required');
+    if (!file) throw new Error('Image file is required');
+
+    // Construct the S3 key as per your requirements
+    const s3Key = `verticals/${verticalId}/templates/${templateId}/images/${file.filename}`;
+    const bucket = process.env.IMAGE_BUCKET;
+    if (!bucket) {
+      logger.error(`IMAGE_BUCKET environment variable is not set`);
+      throw new Error('IMAGE_BUCKET environment variable is not set');
+    }
+    logger.debug(`Preparing to upload image for verticalId: ${verticalId}, templateId: ${templateId} with key: ${s3Key}`);
+    
+    // Read the file from disk
+    const fileBuffer = fs.readFileSync(file.path);
+
+    // Upload to S3 using your S3Service
+    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+    logger.info(`Uploaded object '${s3Key}' to bucket '${bucket}'.`);
+    
+    // Delete the local file after successful upload
+    try {
+      fs.unlinkSync(file.path);
+      logger.info(`Deleted local file: ${file.path}`);
+    } catch (err: any) {
+      logger.error(`Failed to delete local file: ${err.message}`);
+    }
+
+    return {
+      verticalId,
+      templateId,
+      filename: file.filename,
+    };
+  }
+}
 export default new TemplateService();

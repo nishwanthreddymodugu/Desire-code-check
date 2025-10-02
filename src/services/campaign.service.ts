@@ -7,6 +7,8 @@ import { Campaign } from '../models/campaign';
 import { Template } from '../models/template';
 import figmaService from './figma.service';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
+import fs from 'fs';
+import s3Service from './s3.service';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
@@ -163,6 +165,44 @@ class CampaignService {
       logger.info(`Fetched campaign by ID: ${campaignId}`);
     });
   }
-}
+  public async uploadImage(
+    campaignId: string,
+    file: Express.Multer.File
+  ): Promise<{ campaignId: string; filename: string }> {
+    if (!campaignId) throw new Error('campaignId is required');
+    if (!file) throw new Error('Image file is required');
 
+    // Construct the S3 key as per requirements
+    // Using file.filename to match the locally saved file name
+    const s3Key = `campaigns/${campaignId}/images/${file.filename}`;
+    const bucket = process.env.IMAGE_BUCKET ;
+    if (!bucket) {
+      logger.error(`IMAGE_BUCKET environment variable is not set`);
+      throw new Error('IMAGE_BUCKET environment variable is not set');
+    }
+
+    logger.debug(`Preparing to upload image for campaignId: ${campaignId} with key: ${s3Key}`);
+
+    // Read the file from disk
+    const fileBuffer = fs.readFileSync(file.path);
+
+    // Upload to S3 using the S3 service
+    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+    logger.info(`Uploaded object '${s3Key}' to bucket '${bucket}'.`);
+
+    // Delete the local file after successful upload
+    try {
+      fs.unlinkSync(file.path);
+      logger.info(`Deleted local file: ${file.path}`);
+    } catch (err: any) {
+      logger.error(`Failed to delete local file: ${err.message}`);
+    }
+
+    return {
+      campaignId,
+      filename: file.filename,
+    };
+  }
+}
+ 
 export default new CampaignService();

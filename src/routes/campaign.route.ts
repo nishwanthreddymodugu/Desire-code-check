@@ -2,9 +2,47 @@ import { Router, Request, Response, NextFunction } from 'express';
 import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
 import createLogger from '../config/logger';
-
+import multer from 'multer';
+import filepath from 'path';
+import fs from 'fs';
 const logger = createLogger(module);
 const router = Router();
+
+// Disk storage configuration for images
+const uploadDir = filepath.join(process.cwd(), 'uploads', 'images for campaigns');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    const randomSuffix = Math.round(Math.random() * 1e9);
+    const ext = filepath.extname(file.originalname);
+    const baseName = filepath.basename(file.originalname, ext);
+    const customName = `${baseName}-${timestamp}-${randomSuffix}${ext}`;
+    cb(null, customName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1 MB
+  fileFilter: (req, file, cb) => {
+    const allowedExts = ['.png', '.jpg', '.jpeg'];
+    const ext = filepath.extname(file.originalname).toLowerCase();
+
+    if (allowedExts.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!'));
+    }
+  },
+});
 
 router.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -64,4 +102,25 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
   }
 });
 
+// POST /api/v1/campaigns/image/upload
+router.post('/image/upload', upload.single('images'), async (req: Request, res: Response) => {
+  try {
+    const { campaignId } = req.body;
+    const file = req.file;
+
+    if (!campaignId) {
+      return res.status(400).json({ error: 'campaignId is required' });
+    }
+
+    if (!file) {
+      return res.status(400).json({ error: 'Valid image file (.png, .jpg, .jpeg) is required'});
+    }
+
+    const result = await CampaignService.uploadImage(campaignId, file);
+    res.status(200).json(result);
+  } catch (error:any) {
+    const message =error.message || 'Internal Server Error'
+    res.status(400).json({message});
+  }
+});
 export default router;
