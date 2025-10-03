@@ -115,7 +115,7 @@ docker compose up
 
 Once LocalStack is running, create your bucket (e.g., local-desire-image-assets):
 ```bash
-awslocal s3api list-objects --bucket local-desire-image-assets
+awslocal s3api create-bucket --bucket local-desire-image-assets
 ```
 
 You can now use Postman to upload images to your S3 bucket in LocalStack.
