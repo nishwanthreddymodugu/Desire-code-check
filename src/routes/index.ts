@@ -3,10 +3,8 @@ import verticalRoutes from './vertical.route';
 import TemplateRoutes from './template.route';
 import assetRoutes from './asset.route';
 import campaignRoutes from './campaign.route';
-import searchRoutes from './search.route';
 import { authMiddleware } from '../middlewares/auth.middleware';
 const router = Router();
-//router.use('/auth', authMiddleware);
 
 
 router.use('/verticals', authMiddleware, verticalRoutes);
