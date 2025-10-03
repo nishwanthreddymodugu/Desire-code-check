@@ -16,12 +16,7 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const randomSuffix = Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, ext);
-    const customName = `${baseName}-${timestamp}-${randomSuffix}${ext}`;
-    cb(null, customName);
+    cb(null, file.originalname);
   }
 });
 
@@ -95,11 +90,13 @@ templateRouter.post(
       const file = req.file;
 
       if (!verticalId || !templateId) {
-        return res.status(400).json({ error: 'verticalId and templateId are required' });
+        logger.warn('verticalId and templateId are required');
+        return res.status(400).json({ warn: 'verticalId and templateId are required' });
       }
 
       if (!file) {
-        return res.status(400).json({ error: 'Valid image file (.png, .jpg, .jpeg) is required' });
+        logger.warn('Valid image file (.png, .jpg, .jpeg) is required');
+        return res.status(400).json({ warn: 'Valid image file (.png, .jpg, .jpeg) is required'});
       }
 
       // Call service to handle response 

@@ -3,43 +3,54 @@ import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
 import createLogger from '../config/logger';
 import multer from 'multer';
-import filepath from 'path';
+import path from 'path';
 import fs from 'fs';
 const logger = createLogger(module);
 const router = Router();
+//common MAX_FILE_SIZE for images and csv
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
-// Disk storage configuration for images
-const uploadDir = filepath.join(process.cwd(), 'uploads', 'images for campaigns');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+/* ---------------- IMAGE UPLOAD CONFIG ---------------- */
+const imageUploadDir = path.join(process.cwd(), 'uploads', 'images for campaigns');
+if (!fs.existsSync(imageUploadDir)) {
+  fs.mkdirSync(imageUploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
-  filename: (req, file, cb) => {
-    const timestamp = Date.now();
-    const randomSuffix = Math.round(Math.random() * 1e9);
-    const ext = filepath.extname(file.originalname);
-    const baseName = filepath.basename(file.originalname, ext);
-    const customName = `${baseName}-${timestamp}-${randomSuffix}${ext}`;
-    cb(null, customName);
-  }
+const imageStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, imageUploadDir),
+  filename: (req, file, cb) => cb(null, file.originalname),
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1 MB
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     const allowedExts = ['.png', '.jpg', '.jpeg'];
-    const ext = filepath.extname(file.originalname).toLowerCase();
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExts.includes(ext)) cb(null, true);
+    else cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!'));
+  },
+});
 
-    if (allowedExts.includes(ext)) {
+/* ---------------- CSV UPLOAD CONFIG ---------------- */
+const csvUploadDir = path.join(process.cwd(), 'uploads', 'csv for campaigns');
+if (!fs.existsSync(csvUploadDir)) {
+  fs.mkdirSync(csvUploadDir, { recursive: true });
+}
+
+const csvStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, csvUploadDir),
+  filename: (req, file, cb) => cb(null, file.originalname),
+});
+
+const csvUpload = multer({
+  storage: csvStorage,
+  limits: { fileSize: MAX_FILE_SIZE }, // using the same constant
+  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (file.mimetype === 'text/csv' || file.originalname.toLowerCase().endsWith('.csv')) {
       cb(null, true);
     } else {
-      cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!'));
+      cb(new Error('Only CSV files are allowed. Please upload a valid .csv file.'));
     }
   },
 });
@@ -101,26 +112,50 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
     res.status(status).json({ message: error.message || 'Internal Server Error' });
   }
 });
-
-// POST /api/v1/campaigns/image/upload
-router.post('/image/upload', upload.single('images'), async (req: Request, res: Response) => {
+// Image upload
+router.post('/image/upload', imageUpload.single('images'), async (req: Request, res: Response) => {
   try {
     const { campaignId } = req.body;
     const file = req.file;
+      if (!campaignId) {
+        logger.warn('campaignId are required');
+        return res.status(400).json({ warn: 'campaignId are required' });
+      }
 
-    if (!campaignId) {
-      return res.status(400).json({ error: 'campaignId is required' });
-    }
-
-    if (!file) {
-      return res.status(400).json({ error: 'Valid image file (.png, .jpg, .jpeg) is required'});
-    }
+      if (!file) {
+        logger.warn('Valid image file (.png, .jpg, .jpeg) is required');
+        return res.status(400).json({ warn: 'Valid image file (.png, .jpg, .jpeg) is required'});
+      }
 
     const result = await CampaignService.uploadImage(campaignId, file);
     res.status(200).json(result);
-  } catch (error:any) {
-    const message =error.message || 'Internal Server Error'
-    res.status(400).json({message});
+  } catch (error: any) {
+    res.status(400).json({ message: error.message || 'Internal Server Error' });
   }
 });
+
+// CSV upload
+router.post('/csv/upload', csvUpload.single('csv'), async (req: Request, res: Response) => {
+  try {
+    const { campaignId } = req.body;
+    const file = req.file;
+      if (!campaignId) {
+        logger.warn('campaignId are required');
+        return res.status(400).json({ warn: 'campaignId are required' });
+      }
+
+      if (!file) {
+        logger.warn('CSV file is required in "csv" key.');
+        return res.status(400).json({ warn: 'CSV file is required in "csv" key.'});
+      }
+    // if (!campaignId) return res.status(400).json({ message: 'campaignId is required in request body.' });
+    // if (!file) return res.status(400).json({ message: 'CSV file is required in "csv" key.' });
+
+    const result = await CampaignService.uploadCSV(Number(campaignId), file);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message || 'Internal Server Error' });
+  }
+});
+
 export default router;

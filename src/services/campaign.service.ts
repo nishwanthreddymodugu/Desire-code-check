@@ -173,7 +173,6 @@ class CampaignService {
     if (!file) throw new Error('Image file is required');
 
     // Construct the S3 key as per requirements
-    // Using file.filename to match the locally saved file name
     const s3Key = `campaigns/${campaignId}/images/${file.filename}`;
     const bucket = process.env.IMAGE_BUCKET ;
     if (!bucket) {
@@ -188,21 +187,56 @@ class CampaignService {
 
     // Upload to S3 using the S3 service
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-    logger.info(`Uploaded object '${s3Key}' to bucket '${bucket}'.`);
 
     // Delete the local file after successful upload
     try {
       fs.unlinkSync(file.path);
-      logger.info(`Deleted local file: ${file.path}`);
+      logger.info(`Deleted local image file`);
     } catch (err: any) {
-      logger.error(`Failed to delete local file: ${err.message}`);
+      logger.error(`Failed to delete local image file: ${err.message}`);
     }
 
     return {
       campaignId,
-      filename: file.filename,
+      filename: file.originalname,
     };
   }
+  public async uploadCSV(
+  campaignId: number,
+  file: Express.Multer.File
+): Promise<{ campaignId: number; filename: string }> {
+  if (!campaignId) throw new Error('campaignId is required');
+  if (!file) throw new Error('CSV file is required');
+  
+  const s3Key = `campaigns/${campaignId}/csv/${file.filename}`;
+  const bucket = process.env.IMAGE_BUCKET; // reuse same bucket as image upload
+  if (!bucket) {
+    logger.error(`IMAGE_BUCKET environment variable is not set`);
+    throw new Error('IMAGE_BUCKET environment variable is not set');
+  }
+
+  logger.debug(`Preparing to upload CSV for campaignId: ${campaignId} with key: ${s3Key}`);
+
+  // Read file into buffer
+  const fileBuffer = fs.readFileSync(file.path);
+
+  // Upload to S3
+  await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+
+  // Delete the local file after successful upload
+  try {
+    fs.unlinkSync(file.path);
+    logger.info(`Deleted local CSV file`);
+  } catch (err: any) {
+    logger.error(`Failed to delete local CSV file: ${err.message}`);
+  }
+
+  return {
+    campaignId,
+    filename: file.originalname,
+  };
+}
+
 }
  
 export default new CampaignService();

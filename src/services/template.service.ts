@@ -114,20 +114,19 @@ class TemplateService {
 
     // Upload to S3 using your S3Service
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-    logger.info(`Uploaded object '${s3Key}' to bucket '${bucket}'.`);
     
     // Delete the local file after successful upload
     try {
       fs.unlinkSync(file.path);
-      logger.info(`Deleted local file: ${file.path}`);
+      logger.info(`Deleted local image file`);
     } catch (err: any) {
-      logger.error(`Failed to delete local file: ${err.message}`);
+      logger.error(`Failed to delete local image file: ${err.message}`);
     }
 
     return {
       verticalId,
       templateId,
-      filename: file.filename,
+      filename: file.originalname,
     };
   }
 }
