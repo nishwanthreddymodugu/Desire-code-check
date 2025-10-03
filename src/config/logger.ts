@@ -1,31 +1,38 @@
-import { createLogger, format, transports } from 'winston';
+import winston from 'winston';
+import 'winston-daily-rotate-file';
 import path from 'path';
+import fs from 'fs';
 
-const { combine, timestamp, printf, colorize, errors } = format;
+// Log folder
+const logDir = path.join(__dirname, '../../logs');
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
 
-// Custom log format
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level}] ${stack || message}`;
-});
+// Helper to get calling file name
+const getFileName = (module: NodeJS.Module) => path.basename(module.filename);
 
-const logger = createLogger({
-  level: 'info', // Default log level
-  format: combine(
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    errors({ stack: true }), // Log stack trace
-    logFormat
-  ),
-  transports: [
-    // Console output (colorized)
-    new transports.Console({
-      format: combine(colorize(), logFormat),
-    }),
-    // Log all info and above to combined.log
-    new transports.File({ filename: path.join(__dirname, '..', 'logs', 'combined.log') }),
-    // Log errors separately
-    new transports.File({ filename: path.join(__dirname, '..', 'logs', 'error.log'), level: 'error' }),
-  ],
-  exitOnError: false,
-});
+// Create logger
+const createLogger = (module: NodeJS.Module) => {
+  const logFormat = winston.format.printf(({ level, message }) => {
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    return `[${timestamp}] [${getFileName(module)}] ${level.toUpperCase()}: ${message}`;
+  });
 
-export default logger;
+  return winston.createLogger({
+    level: 'debug',
+    format: logFormat,
+    transports: [
+      // File transport with hourly rotation
+      new winston.transports.DailyRotateFile({
+        dirname: logDir,
+        filename: 'app-%DATE%.log',
+        datePattern: 'YYYY-MM-DD-HH', // new log every hour
+        maxFiles: '7d',               // keep logs for 7 days
+      }),
+      // Console transport
+      new winston.transports.Console()
+    ],
+  });
+};
+
+export default createLogger;

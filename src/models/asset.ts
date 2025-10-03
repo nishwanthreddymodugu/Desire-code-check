@@ -37,6 +37,11 @@ export class Asset extends Model<InferAttributes<Asset>, InferCreationAttributes
   declare createdAt: CreationOptional<Date>;
   @UpdatedAt @Column(DataType.DATE)
   declare updatedAt: CreationOptional<Date>;
+      // New Columns for image dimensions
+  @Column({ type: DataType.INTEGER, field: 'prod_image_width', defaultValue: 200 })
+  declare prod_image_width: CreationOptional<number>;
+  @Column({ type: DataType.INTEGER, field: 'prod_image_height', defaultValue: 200 })
+  declare prod_image_height: CreationOptional<number>;
 
   @BelongsTo(() => Template, "templateId")
   declare template: CreationOptional<Template>;

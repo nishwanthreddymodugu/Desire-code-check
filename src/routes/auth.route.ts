@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import AuthService from "../services/auth.service"; // import class instance
-import logger from "../config/logger";
+import createlogger from "../config/logger";
+const logger = createlogger(module);  
 
 const authRouter = Router();
 

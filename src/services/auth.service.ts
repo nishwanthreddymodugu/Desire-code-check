@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import logger from '../config/logger';
+import createlogger from '../config/logger';
 import UserDAO from '../daos/user.dao';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/JWT';
 import { IUser } from '../interfaces/user.interface';
+const logger = createlogger(module);  
 
 class AuthService {
   public async register(req: Request, res: Response) {
@@ -39,10 +40,10 @@ class AuthService {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      const accessToken = signAccessToken({ id: user.id, email: user.email });
-      const refreshToken = signRefreshToken({ id: user.id });
+  const accessToken = signAccessToken({ id: user.userId, email: user.email });
+  const refreshToken = signRefreshToken({ id: user.userId });
 
-      await UserDAO.saveRefreshToken(user.id, refreshToken);
+  await UserDAO.saveRefreshToken(user.userId, refreshToken);
 
       logger.info(`User logged in successfully: ${email}`);
       return res.status(200).json({ message: 'User authenticated', accessToken, refreshToken });
@@ -62,20 +63,35 @@ class AuthService {
       let decoded: any;
       try {
         decoded = verifyRefreshToken(refreshToken);
+        logger.info(`Refresh token decoded payload: ${JSON.stringify(decoded)}`);
       } catch (err) {
-        logger.error('Invalid refresh token');
+        logger.error('Invalid refresh token during verify');
         return res.status(403).json({ message: 'Invalid refresh token' });
       }
 
-      const user = await UserDAO.findByRefreshToken(refreshToken);
+      // find user by id from token payload (safer than searching by token text first)
+      const userId = decoded && (decoded.id || decoded.sub);
+      if (!userId) {
+        logger.error('No user id present in refresh token');
+        return res.status(403).json({ message: 'Invalid refresh token' });
+      }
+
+      const user = await UserDAO.findById(Number(userId));
       if (!user) {
+        logger.error(`No user found for id from token: ${userId}`);
         return res.status(403).json({ message: 'Invalid refresh token' });
       }
 
-      const newAccessToken = signAccessToken({ id: user.id, email: user.email });
-      const newRefreshToken = signRefreshToken({ id: user.id });
+      // ensure the stored refresh token matches the provided one
+      if (!user.refreshToken || user.refreshToken !== refreshToken) {
+        logger.error('Refresh token mismatch: provided token does not match stored token');
+        return res.status(403).json({ message: 'Invalid refresh token' });
+      }
 
-      await UserDAO.saveRefreshToken(user.id, newRefreshToken);
+  const newAccessToken = signAccessToken({ id: user.userId, email: user.email });
+  const newRefreshToken = signRefreshToken({ id: user.userId });
+
+  await UserDAO.saveRefreshToken(user.userId, newRefreshToken);
 
       logger.info(`Access token refreshed for: ${user.email}`);
       return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });

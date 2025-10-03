@@ -12,18 +12,18 @@ VALUES
   ('Template E1', 5, 'Style prompt for E1'), ('Template E2', 5, 'Style prompt for E2');
 
 -- Inserting rows into assets
-INSERT INTO "assets" ("assetname", "description", "figmaURL", "figmaId", "verticalId", "templateId", "stylePrompt")
+INSERT INTO "assets" ("assetname", "description", "figmaURL", "figmaId", "verticalId", "templateId", "stylePrompt", "prod_image_width", "prod_image_height")
 VALUES
-  ('Asset 1', 'Description 1', 'https://figma.com/asset1', 'figma01', 1, 1, 'Style A1'),
-  ('Asset 2', 'Description 2', 'https://figma.com/asset2', 'figma02', 1, 2, 'Style A2'),
-  ('Asset 3', 'Description 3', 'https://figma.com/asset3', 'figma03', 2, 3, 'Style B1'),
-  ('Asset 4', 'Description 4', 'https://figma.com/asset4', 'figma04', 2, 4, 'Style B2'),
-  ('Asset 5', 'Description 5', 'https://figma.com/asset5', 'figma05', 3, 5, 'Style C1'),
-  ('Asset 6', 'Description 6', 'https://figma.com/asset6', 'figma06', 3, 6, 'Style C2'),
-  ('Asset 7', 'Description 7', 'https://figma.com/asset7', 'figma07', 4, 7, 'Style D1'),
-  ('Asset 8', 'Description 8', 'https://figma.com/asset8', 'figma08', 4, 8, 'Style D2'),
-  ('Asset 9', 'Description 9', 'https://figma.com/asset9', 'figma09', 5, 9, 'Style E1'),
-  ('Asset 10', 'Description 10', 'https://figma.com/asset10', 'figma10', 5, 10, 'Style E2');
+  ('Asset 1', 'Description 1', 'https://figma.com/asset1', 'figma01', 1, 1, 'Style A1', 200, 200),
+  ('Asset 2', 'Description 2', 'https://figma.com/asset2', 'figma02', 1, 2, 'Style A2', 200, 200),
+  ('Asset 3', 'Description 3', 'https://figma.com/asset3', 'figma03', 2, 3, 'Style B1', 200, 200),
+  ('Asset 4', 'Description 4', 'https://figma.com/asset4', 'figma04', 2, 4, 'Style B2', 200, 200),
+  ('Asset 5', 'Description 5', 'https://figma.com/asset5', 'figma05', 3, 5, 'Style C1', 200, 200),
+  ('Asset 6', 'Description 6', 'https://figma.com/asset6', 'figma06', 3, 6, 'Style C2', 200, 200),
+  ('Asset 7', 'Description 7', 'https://figma.com/asset7', 'figma07', 4, 7, 'Style D1', 200, 200),
+  ('Asset 8', 'Description 8', 'https://figma.com/asset8', 'figma08', 4, 8, 'Style D2', 200, 200),
+  ('Asset 9', 'Description 9', 'https://figma.com/asset9', 'figma09', 5, 9, 'Style E1', 200, 200),
+  ('Asset 10', 'Description 10', 'https://figma.com/asset10', 'figma10', 5, 10, 'Style E2', 200, 200);
 
 -- Inserting rows into campaigns
 INSERT INTO "campaigns" ("campaignName", "description", "fromDate", "toDate", "status", "verticalId", "templateId")

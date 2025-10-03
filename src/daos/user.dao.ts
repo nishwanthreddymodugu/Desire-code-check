@@ -14,8 +14,13 @@ class UserDAO {
     return User.findOne({ where: { refreshToken } });
   }
 
+  async findById(userId: number): Promise<User | null> {
+    return User.findByPk(userId);
+  }
+
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
-    await User.update({ refreshToken }, { where: { id: userId } });
+    // The User model uses `userId` as the primary key attribute, not `id`.
+    await User.update({ refreshToken }, { where: { userId: userId } });
   }
 }
 
