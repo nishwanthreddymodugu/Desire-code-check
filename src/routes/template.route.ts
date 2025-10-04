@@ -3,35 +3,32 @@ import TemplateService from '../services/template.service';
 import { TemplateIn } from '../interfaces/template.interface';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
 const templateRouter = Router();
 
-// Disk storage for template images
-const uploadDir = path.join(process.cwd(), 'uploads', 'images for templates');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// MAX_FILE_SIZE for images
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  }
+/* ---------------- TEMPLATE IMAGE UPLOAD CONFIG ---------------- */
+const templateImageDir = path.join(process.cwd(), 'uploads', 'images-for-templates');
+fs.mkdir(templateImageDir, { recursive: true });
+
+const templateImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => { cb(null, templateImageDir); },
+  filename: (req, file, cb) => { cb(null, file.originalname); },
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1 MB
+const templateImageUpload = multer({
+  storage: templateImageStorage,
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     const allowedExts = ['.png', '.jpg', '.jpeg'];
     const ext = path.extname(file.originalname).toLowerCase();
-
-    if (allowedExts.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!'));
-    }
+    if (allowedExts.includes(ext)) { cb(null, true); }
+    else { cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!')); }
   },
 });
 
@@ -41,7 +38,7 @@ templateRouter.post('/save', async (req: Request, res: Response) => {
     const verticalIdAsNumber = Number(verticalId);
 
     if (isNaN(verticalIdAsNumber)) {
-      logger.warn('A valid numeric verticalId is required.');
+      logger.error('A valid numeric verticalId is required.');
       return res.status(400).json({ message: 'A valid numeric verticalId is required.' });
     }
 
@@ -68,7 +65,7 @@ templateRouter.get('/list', async (req: Request, res: Response) => {
   try {
     const verticalId = Number(req.query.verticalId);
     if (isNaN(verticalId)) {
-      logger.warn('A valid numeric verticalId query parameter is required.');
+      logger.error('A valid numeric verticalId query parameter is required.');
       return res.status(400).json({ message: 'A valid numeric verticalId query parameter is required.' });
     }
 
@@ -79,33 +76,33 @@ templateRouter.get('/list', async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message || 'Internal Server Error' });
   }
 });
-
-// POST /api/v1/templates/image/upload
+/* ---------------- TEMPLATE IMAGE UPLOAD ROUTE ---------------- */
 templateRouter.post(
   '/image/upload',
-  upload.single('images'),
+  templateImageUpload.array('images'),
   async (req: Request, res: Response) => {
+    const { verticalId, templateId } = req.body;
+    const files = req.files as Express.Multer.File[];
+
+    if (!verticalId || !templateId) {
+      logger.error('verticalId and templateId are required');
+      return res.status(400).json({ message: 'verticalId and templateId are required' });
+    }
+
+    if (!files || files.length === 0) {
+      logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+      return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+    }
+
     try {
-      const { verticalId, templateId } = req.body;
-      const file = req.file;
-
-      if (!verticalId || !templateId) {
-        logger.warn('verticalId and templateId are required');
-        return res.status(400).json({ warn: 'verticalId and templateId are required' });
-      }
-
-      if (!file) {
-        logger.warn('Valid image file (.png, .jpg, .jpeg) is required');
-        return res.status(400).json({ warn: 'Valid image file (.png, .jpg, .jpeg) is required'});
-      }
-
-      // Call service to handle response 
-      const result = await TemplateService.uploadImage(verticalId, templateId, file);
-
-      res.status(200).json(result);
-    } catch (error:any) {
-    const message =error.message || 'Internal Server Error'
-    res.status(400).json({message});
+      const results = await Promise.all(
+        files.map(file => TemplateService.uploadImage(Number(verticalId), Number(templateId), file))
+      );
+      res.status(200).json(results);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Internal Server Error';
+      logger.error(message);
+      res.status(500).json({ error: message });
     }
   }
 );

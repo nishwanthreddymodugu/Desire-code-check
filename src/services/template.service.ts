@@ -4,8 +4,9 @@ import VerticalDAO from '../daos/vertical.dao';
 import { Template } from '../models/template';
 import { TemplateIn, TemplateOut } from '../interfaces/template.interface';
 import createLogger from '../config/logger';
-import fs from 'fs';
+import fs from 'fs/promises'; 
 import s3Service from './s3.service';
+
 const logger = createLogger(module);
 
 class TemplateService {
@@ -92,42 +93,40 @@ class TemplateService {
   }
 
   public async uploadImage(
-    verticalId: string,
-    templateId: string,
+    verticalId: number,
+    templateId: number,
     file: Express.Multer.File
-  ): Promise<{ verticalId: string; templateId: string; filename: string }> {
-    if (!verticalId) throw new Error('verticalId is required');
-    if (!templateId) throw new Error('templateId is required');
-    if (!file) throw new Error('Image file is required');
+  ): Promise<{ verticalId: number; templateId: number; filename: string }> {
+    if (!verticalId || !templateId) {
+      logger.error('verticalId and templateId are required');
+      return Promise.reject(new Error('verticalId and templateId are required'));
+    }
 
-    // Construct the S3 key as per your requirements
-    const s3Key = `verticals/${verticalId}/templates/${templateId}/images/${file.filename}`;
+    if (!file) {
+      logger.error('Image file is required');
+      return Promise.reject(new Error('Image file is required'));
+    }
+
+    const s3Key = `verticals/${verticalId}/templates/${templateId}/images/${file.originalname}`;
     const bucket = process.env.IMAGE_BUCKET;
+
     if (!bucket) {
-      logger.error(`IMAGE_BUCKET environment variable is not set`);
-      throw new Error('IMAGE_BUCKET environment variable is not set');
+      logger.error('IMAGE_BUCKET environment variable is not set');
+      return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
     }
-    logger.debug(`Preparing to upload image for verticalId: ${verticalId}, templateId: ${templateId} with key: ${s3Key}`);
-    
-    // Read the file from disk
-    const fileBuffer = fs.readFileSync(file.path);
 
-    // Upload to S3 using your S3Service
-    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-    
-    // Delete the local file after successful upload
     try {
-      fs.unlinkSync(file.path);
-      logger.info(`Deleted local image file`);
-    } catch (err: any) {
-      logger.error(`Failed to delete local image file: ${err.message}`);
+      const fileBuffer = await fs.readFile(file.path);
+      await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+      await fs.unlink(file.path);
+      logger.info(`Deleted local template image: ${file.originalname}`);
+      return { verticalId, templateId, filename: file.originalname };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to upload template image';
+      logger.error(message);
+      return Promise.reject(new Error(message));
     }
-
-    return {
-      verticalId,
-      templateId,
-      filename: file.originalname,
-    };
   }
 }
+
 export default new TemplateService();
