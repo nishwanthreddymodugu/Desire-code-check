@@ -13,6 +13,7 @@ Welcome to the Desire AI Backend Service repository! This project powers the bac
 -   **Language**: TypeScript
 -   **ORM**: Sequelize with sequelize-typescript
 -   **Database**: PostgreSQL
+-   **Authentication**: JSON Web Tokens (JWT) for secure user authentication. All routes are protected and require a valid JWT for access.
 
 ---
 
@@ -27,6 +28,7 @@ The project follows a professional 4-tier architecture designed for clarity, sca
 -   **`src/models/`**: Contains all Sequelize model definitions, which act as the blueprint for our database tables.
 -   **`src/db/`**: Contains the raw `.sql` files used to reset the database schema and seed it with initial data.
 -   **`src/scripts/`**: Contains Node.js scripts (e.g., `reset-db.ts` and `seed-db.ts`) that execute the SQL files.
+-   **`src/middleware/`**: Contains reusable middleware functions for tasks such as authentication, error handling, and request validation.
 
 ---
 
@@ -152,3 +154,4 @@ Example Log Output
 Log File Location: logs/app-YYYY-MM-DD-HH.log
 
 Make sure the logs/ folder exists, or Winston will create it automatically.
+
