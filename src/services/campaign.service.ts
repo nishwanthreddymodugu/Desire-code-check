@@ -65,6 +65,8 @@ class CampaignService {
           templateId: template.templateId,
           verticalId: template.verticalId,
           status: 'draft',
+          createdAt: new Date(),
+          updatedAt: new Date()
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
 
@@ -94,12 +96,11 @@ class CampaignService {
           todate: newCampaign.toDate,
           verticalId: newCampaign.verticalId,
           templateId: newCampaign.templateId,
-          assets: createdAssets.map((asset) => asset.assetId),
+          assets: createdAssets.map(asset => asset.assetId),
+          createdAt: newCampaign.createdAt.toISOString(),
+          updatedAt: newCampaign.updatedAt.toISOString()
         });
       } catch (error: any) {
-        // Rollback the transaction on error
-        await transaction.rollback();
-        logger.error(`Failed to create campaign: ${error.message}`);
         reject(error);
       }
     });
@@ -141,6 +142,8 @@ class CampaignService {
             status: c.status,
             verticalId: c.verticalId,
             templateId: c.templateId,
+            createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
+            updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : c.updatedAt
           }))
         );
       } catch (error: any) {
@@ -169,8 +172,11 @@ class CampaignService {
           verticalId: campaign.verticalId,
           templateId: campaign.templateId,
           assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
+          createdAt: campaign.createdAt instanceof Date ? campaign.createdAt.toISOString() : campaign.createdAt,
+          updatedAt: campaign.updatedAt instanceof Date ? campaign.updatedAt.toISOString() : campaign.updatedAt
         });
       } catch (error: any) {
+        reject(error);
       }
       logger.info(`Fetched campaign by ID: ${campaignId}`);
     });

@@ -26,6 +26,8 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
       todate,
       verticalId: Number(verticalId),
       templateId: Number(templateId),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       assets: assets.map((id: string) => Number(id)),
     };
 

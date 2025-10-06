@@ -6,6 +6,10 @@ export interface CampaignIn {
     verticalId: number;
     templateId: number;
     assets: number[]; 
+    createdBy?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    updatedBy?: string | null;
 }
 
 export interface CampaignCreateOut {
@@ -16,7 +20,11 @@ export interface CampaignCreateOut {
     todate: Date;
     verticalId: number;
     templateId: number;
-    assets: number[]; 
+    assets: number[]; // Returns an array of the master asset IDs used
+    createdBy?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    updatedBy?: string | null;
 }
 export interface CampaignListOut {
     campaignId: number;
@@ -26,6 +34,10 @@ export interface CampaignListOut {
     status: string | null;
     verticalId: number;
     templateId: number;
+    createdBy?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    updatedBy?: string | null;
 }
 
 export interface CampaignGetOut {
@@ -37,5 +49,9 @@ export interface CampaignGetOut {
     todate: Date;
     verticalId: number;
     templateId: number;
-    assets: number[]; 
+    assets: number[]; // Returns an array of the master asset IDs used
+    createdBy?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    updatedBy?: string | null;
 }

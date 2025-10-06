@@ -100,6 +100,8 @@ describe('CampaignService', () => {
       verticalId: 2,
       templateId: 5,
       assets: [11, 12],
+      createdAt: '2024-01-01',
+      updatedAt: '2024-01-01'
     };
 
     it('creates a campaign and clones assets when validation passes', async () => {
@@ -118,6 +120,8 @@ describe('CampaignService', () => {
         toDate: new Date('2024-01-31'),
         templateId: 5,
         verticalId: 2,
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
       });
       mockedFigmaService.cloneFile
         .mockResolvedValueOnce({ clonedFileId: 'clone-11' })
@@ -127,7 +131,22 @@ describe('CampaignService', () => {
         { assetId: 12 },
       ]);
 
-      const result = await CampaignService.create(input);
+      // Add createdAt and updatedAt to input to match CampaignIn type
+      const now = new Date();
+      const inputWithTimestamps = {
+        ...input,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      // Convert Date objects to ISO strings for createdAt and updatedAt
+      const inputWithTimestampsString = {
+        ...input,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+      };
+
+      const result = await CampaignService.create(inputWithTimestampsString);
 
       expect(mockedCampaignDAO.createCampaign).toHaveBeenCalled();
       expect(mockedCampaignDAO.bulkCreateCampaignAssets).toHaveBeenCalledWith(
@@ -158,6 +177,8 @@ describe('CampaignService', () => {
         verticalId: 2,
         templateId: 5,
         assets: [11, 12],
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01')
       });
     });
 
@@ -233,6 +254,8 @@ describe('CampaignService', () => {
           status: 'draft',
           verticalId: 2,
           templateId: 5,
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
         },
       ]);
 
