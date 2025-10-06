@@ -1,83 +1,94 @@
-// import { Router, Request, Response, NextFunction } from "express";
-// import AuthService from "../services/auth.service"; // import class instance
-// import createlogger from "../config/logger";
-// const logger = createlogger(module);  
-
-// const authRouter = Router();
-
-// // Register
-// authRouter.post("/register", async (req: Request, res: Response, next: NextFunction) => {
-//   logger.info(`POST /auth/register called with data: ${JSON.stringify(req.body)}`);
-//   try {
-//     await AuthService.register(req, res); // call method on instance
-//   } catch (error: any) {
-//     logger.error(`Error in POST /auth/register: ${error.message}`);
-//     next(error);
-//   }
-// });
-
-// // Login
-// authRouter.post("/login", async (req: Request, res: Response, next: NextFunction) => {
-//   logger.info(`POST /auth/login called with data: ${JSON.stringify(req.body)}`);
-//   try {
-//     await AuthService.login(req, res);
-//   } catch (error: any) {
-//     logger.error(`Error in POST /auth/login: ${error.message}`);
-//     next(error);
-//   }
-// });
-
-// // Refresh Token
-// authRouter.post("/refresh", async (req: Request, res: Response, next: NextFunction) => {
-//   logger.info("POST /auth/refresh called");
-//   try {
-//     await AuthService.refresh(req, res);
-//   } catch (error: any) {
-//     logger.error(`Error in POST /auth/refresh: ${error.message}`);
-//     next(error);
-//   }
-// });
-
-// export default authRouter;
-
-import { Router, Request, Response, NextFunction } from "express";
-import AuthService from "../services/auth.service"; // import class instance
-import createlogger from "../config/logger";
-const logger = createlogger(module);  
-
-const authRouter = Router();
-
-// Register
-authRouter.post("/register", async (req: Request, res: Response, next: NextFunction) => {
-  logger.info(`POST /auth/register called with data: ${JSON.stringify(req.body)}`);
+import { Router, Request, Response, NextFunction } from 'express';
+import AuthService from '../services/auth.service';
+import { IUser } from '../interfaces/user.interface';
+import createlogger from '../config/logger';
+import validator from 'validator'; 
+const logger = createlogger(module);
+const router = Router();
+// ==================== REGISTER ====================
+router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+  logger.info(`Route: POST /auth/register called`);
   try {
-    await AuthService.register(req, res); // call method on instance
+    const { name, email, password, mobile } = req.body;
+
+    // --- The route handler is responsible for all format validation ---
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required.' });
+    }
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: 'Invalid email format provided.' });
+    }
+    if (mobile && !/^\d{10}$/.test(mobile)) {
+        return res.status(400).json({ message: 'Invalid mobile number format. Expected format: 10 digits only' });
+    }
+    
+    const userIn: IUser = { name, email, password, mobile };
+    const userOut = await AuthService.register(userIn);
+    
+    res.status(201).json(userOut);
+
   } catch (error: any) {
-    logger.error(`Error in POST /auth/register: ${error.message}`);
-    next(error);
+    logger.error(`Route Error in /register: ${error.name} - ${error.message}`);
+    let status = 500;
+    let message = 'An internal server error occurred.';
+
+    // Handle Sequelize unique constraint errors
+    if (error.name === 'SequelizeUniqueConstraintError') {
+        status = 409;
+        const field = error.errors[0]?.path || 'field';
+        if (field === 'email') {
+            message = 'An account with this email already exists.';
+        } else if (field === 'mobile') {
+            message = 'An account with this mobile number already exists.';
+        } else {
+            message = `An account with this ${field} already exists.`;
+        }
+    }
+    // Handle Sequelize validation errors
+    else if (error.name === 'SequelizeValidationError') {
+        status = 400;
+        message = error.errors[0]?.message || 'Validation error occurred.';
+    }
+    // Handle general validation errors from service
+    else if (error.message.includes('Validation failed')) {
+        status = 400;
+        message = error.message;
+    }
+
+    res.status(status).json({ message });
   }
 });
 
-// Login
-authRouter.post("/login", async (req: Request, res: Response, next: NextFunction) => {
-  logger.info(`POST /auth/login called with data: ${JSON.stringify(req.body)}`);
+// ==================== LOGIN ====================
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+  logger.info(`Route: POST /auth/login called for email: ${req.body.email}`);
   try {
-    await AuthService.login(req, res);
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required.' });
+    }
+    const result = await AuthService.login({ email, password });
+    res.status(200).json(result);
   } catch (error: any) {
-    logger.error(`Error in POST /auth/login: ${error.message}`);
-    next(error);
+    logger.error(`Route Error in /login: ${error.message}`);
+    res.status(401).json({ message: error.message });
   }
 });
 
-// Refresh Token
-authRouter.post("/refresh", async (req: Request, res: Response, next: NextFunction) => {
-  logger.info("POST /auth/refresh called");
+// ==================== REFRESH TOKEN ====================
+router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
+  logger.info("Route: POST /auth/refresh called");
   try {
-    await AuthService.refresh(req, res);
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'Refresh token is required.' });
+    }
+    const result = await AuthService.refresh({ refreshToken });
+    res.status(200).json(result);
   } catch (error: any) {
-    logger.error(`Error in POST /auth/refresh: ${error.message}`);
-    next(error);
+    logger.error(`Route Error in /refresh: ${error.message}`);
+    res.status(401).json({ message: error.message });
   }
 });
 
-export default authRouter;
+export default router;

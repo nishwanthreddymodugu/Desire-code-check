@@ -6,10 +6,6 @@ import { IUser } from '../interfaces/user.interface';
 
 const logger = createLogger(module);
 
-// export interface AuthRequest extends Request {
-//   user?: { userId?: number; name: string; email: string; password: string; mobile: string;};
-// }
-
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const token = req.headers['x-auth'] as string;
 
