@@ -87,38 +87,6 @@ AWS_S3_FORCE_PATH_STYLE=true
 IMAGE_BUCKET=local-desire-image-assets
 IMAGE_GEN_QUEUE=local-desire-image-request-queue
 ```
-## LocalStack S3 Setup
-Install the following:
-
-Node.js LTS (18+ recommended) and npm
-
-Docker Desktop (to run LocalStack desktop)
-
-AWS CLI v2 (for real AWS accounts)
-
-Once the basics are installed, add the helper CLIs that the project scripts rely on:
-```bash
-npm install --global aws-cdk aws-cdk-local
-pip install awscli-local
-```
-
-### 1. Start LocalStack with Docker Compose
-
-Created a docker-compose.yml 
-
-Run the following command:
-```bash
-docker compose up
-```
-
-### 2. Create an S3 Bucket
-
-Once LocalStack is running, create your bucket (e.g., local-desire-image-assets):
-```bash
-awslocal s3api create-bucket --bucket local-desire-image-assets
-```
-
-You can now use Postman to upload images to your S3 bucket in LocalStack.
 
 ## 🛠️ Database Setup (Crucial Step)
 
