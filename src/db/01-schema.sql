@@ -73,7 +73,7 @@ CREATE TABLE "campaigns" (
     "status" VARCHAR(50),
     "verticalId" INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
     "templateId" INTEGER NOT NULL REFERENCES "templates"("templateId") ON DELETE CASCADE,
-    "createdBy" VARCHAR(100),
+    "createdBy" INTEGER REFERENCES "users"("userId") ON DELETE SET NULL,
     "updatedBy" VARCHAR(100),
     "deleted" BOOLEAN DEFAULT FALSE,
     "createdAt" TIMESTAMPTZ DEFAULT NOW(),

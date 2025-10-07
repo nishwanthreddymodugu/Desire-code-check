@@ -1,8 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
-// Removed import of AuthRequest due to missing module or type declaration
+import { IUser } from '../interfaces/user.interface';
 import createLogger from '../config/logger';
+
+interface AuthRequest extends Request {
+  user?: IUser;
+}
 
 
 const logger = createLogger(module);
@@ -11,10 +15,9 @@ const CampaignRouter = Router();
 CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
-    // @ts-expect-error: 'user' is added by authentication middleware
-    const user = req.user;
-    if (!user || !user.name) {
-        return res.status(401).json({ message: "User information is missing from the token." });
+    const user = (req as AuthRequest).user;
+    if (!user || !user.id || !user.name) {
+        return res.status(401).json({ message: "User information is missing or incomplete in the token." });
     }
     if (!campaignname || !verticalId || !templateId || !assets) {
       return res.status(400).json({ 
@@ -33,8 +36,10 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
       todate,
       verticalId: Number(verticalId),
       templateId: Number(templateId),
-      createdAt: new Date().toISOString(),
-      createdBy: user.name,
+      createdBy: {
+        userId: user.id!,
+        name: user.name
+      },
       assets: assets.map((id: string) => Number(id)),
     };
 
@@ -46,7 +51,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
     const message = error.message || 'Internal Server Error';
 
     if (/required|invalid/i.test(message)) status = 400;
-    else if (error.name === 'SequelizeUniqueConstraintError') {
+    else if (error.name === 'SequelizeUniqueConstraintError' || /already exists/i.test(message)) {
       status = 409; 
       res.status(status).json({ message: `A campaign with the name '${req.body.campaignname}' already exists.` });
       return;
@@ -59,8 +64,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
 
 CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // @ts-expect-error: 'user' is added by authentication middleware
-    const user = req.user;
+    const user = (req as AuthRequest).user;
     if (!user || !user.name) {
       return res.status(401).json({ message: "User information is missing from the token." });
     }
@@ -75,8 +79,7 @@ CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFuncti
 
 CampaignRouter.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // @ts-expect-error: 'user' is added by authentication middleware
-    const user = req.user;
+    const user = (req as AuthRequest).user;
     if (!user || !user.name) {
       return res.status(401).json({ message: "User information is missing from the token." });
     }

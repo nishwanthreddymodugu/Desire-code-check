@@ -3,6 +3,8 @@ import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
 import { Asset } from '../models/asset';
 import createLogger from '../config/logger';
+import { Vertical } from '../models/vertical';
+import { Template } from '../models/template';
 const logger = createLogger(module);
 
 class CampaignDAO {
@@ -29,12 +31,16 @@ class CampaignDAO {
     
     public async findById(id: number): Promise<Campaign | null> {
         try {
-            const campaign = await Campaign.findByPk(id, { include: [Asset] });
+            const campaign = await Campaign.findByPk(id, { include: [Asset, Vertical, Template] });
             return campaign;
         } catch (error) {
             logger.error(`${id}: ${(error as Error).message}`);
             throw error;
         }
+    }
+
+    public async findByName(name: string): Promise<Campaign | null> {
+        return Campaign.findOne({ where: { campaignName: name } });
     }
 
     

@@ -2,6 +2,7 @@ import CampaignService from '../campaign.service';
 import CampaignDAO from '../../daos/campaign.dao';
 import TemplateDAO from '../../daos/template.dao';
 import AssetDAO from '../../daos/asset.dao';
+import VerticalDAO from '../../daos/vertical.dao';
 import figmaService from '../figma.service';
 import { sequelize } from '../../config/database';
 
@@ -42,6 +43,13 @@ jest.mock('../../daos/asset.dao', () => ({
   },
 }));
 
+jest.mock('../../daos/vertical.dao', () => ({
+  __esModule: true,
+  default: {
+    findById: jest.fn(),
+  },
+}));
+
 jest.mock('../figma.service', () => ({
   __esModule: true,
   default: {
@@ -75,6 +83,10 @@ const mockedAssetDAO = AssetDAO as unknown as {
   findByName: jest.Mock;
 };
 
+const mockedVerticalDAO = VerticalDAO as unknown as {
+  findById: jest.Mock;
+};
+
 const mockedFigmaService = figmaService as unknown as {
   cloneFile: jest.Mock;
   updateFile: jest.Mock;
@@ -83,7 +95,11 @@ const mockedFigmaService = figmaService as unknown as {
 describe('CampaignService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedCampaignDAO.findByName.mockResolvedValue(null);
+    // Mock VerticalDAO to return a valid vertical for most tests
+    mockedVerticalDAO.findById.mockResolvedValue({
+      verticalId: 2,
+      verticalName: 'Test Vertical'
+    });
   });
 
   const createTransactionMock = () => ({
@@ -100,8 +116,10 @@ describe('CampaignService', () => {
       verticalId: 2,
       templateId: 5,
       assets: [11, 12],
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
+      createdBy: {
+        userId: 1,
+        name: 'Test User'
+      }
     };
 
     it('creates a campaign and clones assets when validation passes', async () => {
@@ -120,6 +138,7 @@ describe('CampaignService', () => {
         toDate: new Date('2024-01-31'),
         templateId: 5,
         verticalId: 2,
+        createdBy: 1,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01')
       });
@@ -131,22 +150,7 @@ describe('CampaignService', () => {
         { assetId: 12 },
       ]);
 
-      // Add createdAt and updatedAt to input to match CampaignIn type
-      const now = new Date();
-      const inputWithTimestamps = {
-        ...input,
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      // Convert Date objects to ISO strings for createdAt and updatedAt
-      const inputWithTimestampsString = {
-        ...input,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-      };
-
-      const result = await CampaignService.create(inputWithTimestampsString);
+      const result = await CampaignService.create(input);
 
       expect(mockedCampaignDAO.createCampaign).toHaveBeenCalled();
       expect(mockedCampaignDAO.bulkCreateCampaignAssets).toHaveBeenCalledWith(
@@ -177,8 +181,8 @@ describe('CampaignService', () => {
         verticalId: 2,
         templateId: 5,
         assets: [11, 12],
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01')
+        createdByUserID: 1,
+        createdAt: '2024-01-01T00:00:00.000Z'
       });
     });
 
@@ -222,7 +226,7 @@ describe('CampaignService', () => {
       ]);
 
       await expect(CampaignService.create(input)).rejects.toThrow(
-        'These asset IDs do not exist: 12.'
+        'One or more provided asset IDs do not exist.'
       );
       expect(transaction.rollback).toHaveBeenCalledTimes(1);
     });
@@ -292,6 +296,8 @@ describe('CampaignService', () => {
           status: 'draft',
           verticalId: 2,
           templateId: 5,
+          createdBy: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
         },
       ]);
     });
@@ -314,10 +320,18 @@ describe('CampaignService', () => {
         toDate: new Date('2024-02-28'),
         verticalId: 2,
         templateId: 5,
+        createdBy: 1,
+        createdAt: new Date('2024-01-01'),
         assets: [
           { assetId: 1 },
           { assetId: 2 },
         ],
+        vertical: {
+          verticalName: 'Test Vertical'
+        },
+        template: {
+          templateName: 'Test Template'
+        }
       });
 
       const result = await CampaignService.getById(7);
@@ -332,6 +346,10 @@ describe('CampaignService', () => {
         verticalId: 2,
         templateId: 5,
         assets: [1, 2],
+        createdByUserID: 1,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        verticalName: 'Test Vertical',
+        templateName: 'Test Template',
       });
     });
   });

@@ -68,7 +68,7 @@ class SearchService {
                 mustClauses.push({
                     multi_match: {
                         query: q,
-                        fields: ["campaignname", "description","verticalName", "templateName", "createdBy"],
+                        fields: ["campaignname", "description","verticalName", "templateName", "createdByName"],
                         fuzziness: "AUTO" 
                     }
                 });
@@ -88,10 +88,15 @@ class SearchService {
                 filterClauses.push({ range: { fromdate: fromDateRange } });
             }
 
-            // Combine all the small plan pieces into one master search plan.
             const esQuery = {
                 index: 'campaign_search',
+                // --- THIS IS THE FIX ---
+                size: 10, // Add the limit to 10 results
                 body: {
+                    sort: [ // Add the sort order to get the most recent first
+                        { createdAt: { order: "desc" } }
+                    ],
+                    // --------------------
                     query: {
                         bool: {
                             must: mustClauses.length > 0 ? mustClauses : { match_all: {} },

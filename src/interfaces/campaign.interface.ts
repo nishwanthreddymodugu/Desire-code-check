@@ -5,11 +5,12 @@ export interface CampaignIn {
     todate: string;
     verticalId: number;
     templateId: number;
-    assets: number[]; 
-    createdBy?: string | null;
-    createdAt: string;
+    assets: number[];
+    createdBy: {
+        userId: number;
+        name: string;
+    };
 }
-
 export interface CampaignCreateOut {
     campaignId: number;
     campaignname: string;
@@ -18,8 +19,8 @@ export interface CampaignCreateOut {
     todate: Date;
     verticalId: number;
     templateId: number;
-    assets: number[]; // Returns an array of the master asset IDs used
-    createdBy?: string | null;
+    assets: number[]; // A simple array of the master asset IDs
+    createdByUserID: number; // The numeric ID of the user who created it
     createdAt: string;
 }
 export interface CampaignListOut {
@@ -30,10 +31,9 @@ export interface CampaignListOut {
     status: string | null;
     verticalId: number;
     templateId: number;
-    createdBy?: string | null;
+    createdBy: number | null;
     createdAt: string;
 }
-
 export interface CampaignGetOut {
     campaignId: number;
     campaignname: string;
@@ -43,7 +43,10 @@ export interface CampaignGetOut {
     todate: Date;
     verticalId: number;
     templateId: number;
-    assets: number[]; // Returns an array of the master asset IDs used
-    createdBy?: string | null;
+    assets: number[];
+    createdByUserID: number | null; // Corrected property name
     createdAt: string;
+    // --- NEW ENRICHED FIELDS ---
+    verticalName: string;
+    templateName: string;
 }
