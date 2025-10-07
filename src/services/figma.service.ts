@@ -35,4 +35,3 @@ class FigmaService {
 }
 
 export default new FigmaService();
-

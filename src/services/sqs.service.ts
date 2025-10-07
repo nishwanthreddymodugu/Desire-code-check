@@ -72,7 +72,7 @@ class SQSService {
       const response = await this.client.send(
         new GetQueueUrlCommand({
           QueueName: queueName,
-          QueueOwnerAWSAccountId: process.env.AWS_ACCOUNT_ID,
+          // QueueOwnerAWSAccountId: process.env.AWS_ACCOUNT_ID,
         })
       );
 

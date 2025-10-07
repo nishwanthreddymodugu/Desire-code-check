@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS "campaigns" CASCADE;
 DROP TABLE IF EXISTS "assets" CASCADE;
 DROP TABLE IF EXISTS "templates" CASCADE;
 DROP TABLE IF EXISTS "verticals" CASCADE;
+DROP TABLE IF EXISTS "image_gen_requests" CASCADE;
 -- Create verticals table
 CREATE TABLE "verticals" (
     "verticalId" SERIAL PRIMARY KEY,
@@ -75,3 +76,25 @@ CREATE TABLE "campaignassets" (
     "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY ("campaignId", "assetId")
 );
+
+CREATE TABLE IF NOT EXISTS image_gen_requests (
+  id BIGSERIAL PRIMARY KEY,
+  prompt TEXT NOT NULL,
+  campaignId INTEGER NOT NULL REFERENCES "campaigns"("campaignId") ON DELETE CASCADE,
+  verticalId INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
+  templateId INTEGER NOT NULL REFERENCES "templates"("templateId") ON DELETE CASCADE,
+  figmaProjectId INTEGER NULL,
+  use_ref_img BOOLEAN NOT NULL DEFAULT FALSE,
+  use_template_prompt BOOLEAN NOT NULL DEFAULT FALSE,
+  use_user_given_imgs BOOLEAN NOT NULL DEFAULT FALSE,
+  user_given_imgs TEXT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'requested',
+  createdBy VARCHAR(100) NULL,
+  updatedBy VARCHAR(100) NULL,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+

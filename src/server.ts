@@ -9,7 +9,7 @@ import createLogger from "./config/logger";
 const logger = createLogger(module); // pass module to show filename in logs
 
 const app: Application = express();
-const PORT = process.env.PORT;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(cors());
 app.use(express.json());
