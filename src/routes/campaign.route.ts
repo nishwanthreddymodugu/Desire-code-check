@@ -8,7 +8,6 @@ interface AuthRequest extends Request {
   user?: IUser;
 }
 
-
 const logger = createLogger(module);
 const CampaignRouter = Router();
 
@@ -65,9 +64,6 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
 CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as AuthRequest).user;
-    if (!user || !user.name) {
-      return res.status(401).json({ message: "User information is missing from the token." });
-    }
     const campaigns = await CampaignService.list(req.query);
     res.status(200).json(campaigns);
   } catch (error: any) {
@@ -80,15 +76,11 @@ CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFuncti
 CampaignRouter.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as AuthRequest).user;
-    if (!user || !user.name) {
-      return res.status(401).json({ message: "User information is missing from the token." });
-    }
     const campaignId = Number(req.params.campaignId);
     if (isNaN(campaignId)) {
       logger.warn('A valid numeric campaignId is required.');
       return res.status(400).json({ message: 'A valid numeric campaignId is required.' });
     }
-
     const campaign = await CampaignService.getById(campaignId);
     res.status(200).json(campaign);
   } catch (error: any) {

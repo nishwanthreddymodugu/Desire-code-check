@@ -39,9 +39,9 @@ class CampaignDAO {
         }
     }
 
-    public async findByName(name: string): Promise<Campaign | null> {
-        return Campaign.findOne({ where: { campaignName: name } });
-    }
+    // public async findByName(name: string): Promise<Campaign | null> {
+    //     return Campaign.findOne({ where: { campaignName: name } });
+    // }
 
     
     public async list(options: FindOptions): Promise<Campaign[]> {
