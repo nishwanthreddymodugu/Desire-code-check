@@ -53,63 +53,31 @@ class SearchClient {
             throw error;
         }
     }
+    /**
+     * Indexes multiple campaign documents in a single, efficient bulk request.
+     * @param documents An array of campaign documents to be indexed.
+     */
+    public async bulkIndexCampaigns(documents: CampaignDocument[]): Promise<any> {
+        try {
+            if (documents.length === 0) return;
+
+            // The Elasticsearch bulk API requires a special format:
+            // an array of { action: metadata } followed by the document source.
+            const operations = documents.flatMap(doc => [
+                { index: { _index: CAMPAIGN_INDEX, _id: doc.campaignId.toString() } },
+                doc
+            ]);
+
+            const bulkResponse = await esClient.bulk({ refresh: true, operations });
+            return bulkResponse;
+
+        } catch (error) {
+            logger.error('[SearchClient] Error during bulk indexing:', error);
+            throw error;
+        }
+    }
 }
 
+
+
 export default new SearchClient();
-
-// import { esClient } from '../config/elasticsearch.js';
-// import { CampaignDocument } from '../interfaces/search.interface.js';
-// import createLogger from '../config/logger.js';
-// const logger = createLogger(module);
-// const CAMPAIGN_INDEX = 'campaign_search';
-
-// /**
-//  * This class handles all direct communication with Elasticsearch.
-//  * It now includes try/catch blocks to gracefully handle any potential
-//  * network or API errors from the Elasticsearch service.
-//  */
-// class SearchClient {
-    
-//     public async createCampaignIndex(): Promise<void> {
-//         try {
-//             const indexExists: boolean = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
-//             if (!indexExists) {
-//                 logger.info(`[SearchClient] Index '${CAMPAIGN_INDEX}' does not exist. Creating...`);
-//                 await esClient.indices.create({ index: CAMPAIGN_INDEX });
-//                 logger.info(`[SearchClient] Index '${CAMPAIGN_INDEX}' created successfully.`);
-//             } else {
-//                 logger.info(`[SearchClient] Index '${CAMPAIGN_INDEX}' already exists.`);
-//             }
-//         } catch (error) {
-//             logger.error('[SearchClient] Error creating campaign index:', error);
-//             // Re-throw the error to be caught by the service layer.
-//             throw error;
-//         }
-//     }
-
-//     public async addOrUpdateCampaign(document: CampaignDocument): Promise<void> {
-//         try {
-//             await esClient.index({
-//                 index: CAMPAIGN_INDEX,
-//                 id: document.campaignId.toString(),
-//                 document: document,
-//                 refresh: true,
-//             });
-//         } catch (error) {
-//             logger.error(`[SearchClient] Error adding/updating document with ID ${document.campaignId}:`, error);
-//             throw error;
-//         }
-//     }
-
-//     public async searchCampaigns(query: Record<string, any>): Promise<any> {
-//         try {
-//             const results = await esClient.search(query);
-//             return results;
-//         } catch (error) {
-//             logger.error('[SearchClient] Error executing search query:', error);
-//             throw error;
-//         }
-//     }
-// }
-
-// export default new SearchClient();

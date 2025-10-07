@@ -53,6 +53,17 @@ class CampaignDAO {
             throw error;
         }
     }
+    /**
+     * Finds all campaigns within a date range, eagerly loading related data for indexing.
+     * @param options The Sequelize query options, including the date range.
+     */
+    public async findAllForIndexing(options: FindOptions): Promise<Campaign[]> {
+        // We 'include' the related models to fetch their names in a single, efficient query.
+        return Campaign.findAll({
+            ...options,
+            include: [Vertical, Template, Asset]
+        });
+    }
 }
 
 export default new CampaignDAO();
