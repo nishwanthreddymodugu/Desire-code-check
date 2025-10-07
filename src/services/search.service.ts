@@ -68,7 +68,7 @@ class SearchService {
                 mustClauses.push({
                     multi_match: {
                         query: q,
-                        fields: ["campaignname", "description"],
+                        fields: ["campaignname", "description","verticalName", "templateName", "createdBy"],
                         fuzziness: "AUTO" 
                     }
                 });

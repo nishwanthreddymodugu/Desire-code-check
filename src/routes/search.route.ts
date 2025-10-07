@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import SearchService from '../services/search.service';
 import { CampaignDocument } from '../interfaces/search.interface';
+//import { authMiddleware } from '../middlewares/auth.middleware';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
@@ -29,6 +30,11 @@ SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: Nex
         const campaignDoc: CampaignDocument = req.body;
         if (!campaignDoc.campaignId || !campaignDoc.campaignname) {
             return res.status(400).json({ message: "campaignId and campaignname are required."});
+        }
+        // TypeScript fix: add type assertion for req.user
+        const user = (req as any).user;
+        if (!user || !user.name) {
+            return res.status(401).json({ message: "User information is missing from the token." });
         }
         await SearchService.addCampaignToIndex(campaignDoc);
         res.status(200).json({ message: `Campaign ${campaignDoc.campaignId} indexed successfully.` });

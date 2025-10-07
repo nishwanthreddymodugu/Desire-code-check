@@ -3,9 +3,12 @@ import { sequelize } from '../config/database';
 import CampaignDAO from '../daos/campaign.dao';
 import TemplateDAO from '../daos/template.dao';
 import AssetDAO from '../daos/asset.dao';
+import VerticalDAO from '../daos/vertical.dao'
 import { Campaign } from '../models/campaign';
 import { Template } from '../models/template';
 import figmaService from './figma.service';
+import SearchService from './search.service'
+import { CampaignDocument } from '../interfaces/search.interface';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
 import createLogger from '../config/logger';
 
@@ -26,12 +29,18 @@ class CampaignService {
         const [template, originalAssets] = await Promise.all([
           TemplateDAO.findById(data.templateId),
           AssetDAO.list({ where: { assetId: data.assets } }),
+          VerticalDAO.findById(data.verticalId)
         ]);
 
-        // Validate template existence
+        // Validate template and vertical existence
+        const vertical = await VerticalDAO.findById(data.verticalId);
         if (!template) {
           await transaction.rollback();
-          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`)); // Highlighted change: Added template existence validation
+          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+        }
+        if (!vertical) {
+          await transaction.rollback();
+          return reject(new Error(`Vertical with ID '${data.verticalId}' does not exist.`));
         }
 
         // Validate template belongs to the correct vertical
@@ -39,7 +48,6 @@ class CampaignService {
           await transaction.rollback();
           return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`)); // Highlighted change: Added vertical validation
         }
-
         // Validate all asset IDs exist
         const foundAssetIds = originalAssets.map((a) => a.assetId);
         const missingAssetIds = data.assets.filter((id) => !foundAssetIds.includes(id));
@@ -65,8 +73,9 @@ class CampaignService {
           templateId: template.templateId,
           verticalId: template.verticalId,
           status: 'draft',
+          createdBy: data.createdBy,
           createdAt: new Date(),
-          updatedAt: new Date()
+          //updatedAt: new Date()
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
 
@@ -97,10 +106,37 @@ class CampaignService {
           verticalId: newCampaign.verticalId,
           templateId: newCampaign.templateId,
           assets: createdAssets.map(asset => asset.assetId),
+          createdBy: newCampaign.createdBy,
           createdAt: newCampaign.createdAt.toISOString(),
-          updatedAt: newCampaign.updatedAt.toISOString()
+         //updatedAt: newCampaign.updatedAt.toISOString()
         });
+        try {
+          const campaignDoc: CampaignDocument = {
+              campaignId: newCampaign.campaignId,
+              campaignname: newCampaign.campaignName,
+              description: newCampaign.description,
+              status: newCampaign.status,
+              fromdate: newCampaign.fromDate,
+              todate: newCampaign.toDate,
+              verticalId: newCampaign.verticalId,
+              templateId: newCampaign.templateId,
+              assets: createdAssets.map(a => a.assetId),
+              createdAt: newCampaign.createdAt,
+              //updatedAt: newCampaign.updatedAt,
+              verticalName: vertical.verticalName,
+              templateName: template.templateName,
+              createdBy: newCampaign.createdBy,
+              //updatedBy: newCampaign.updatedBy,
+          };
+          // Asynchronously send the document to the search service.
+          // We don't 'await' this, so the main API response is fast.
+          SearchService.addCampaignToIndex(campaignDoc);
+      } catch (searchError) {
+          // If indexing fails, we only log the error. We do not fail the main request.
+          logger.error(`Failed to index campaign ${newCampaign.campaignId} after creation:`, searchError);
+      }
       } catch (error: any) {
+        await transaction.rollback();
         reject(error);
       }
     });
@@ -142,8 +178,9 @@ class CampaignService {
             status: c.status,
             verticalId: c.verticalId,
             templateId: c.templateId,
+            createdBy: c.createdBy || null,
             createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-            updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : c.updatedAt
+            //updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : c.updatedAt
           }))
         );
       } catch (error: any) {
@@ -172,8 +209,9 @@ class CampaignService {
           verticalId: campaign.verticalId,
           templateId: campaign.templateId,
           assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
+          createdBy: campaign.createdBy || null,
           createdAt: campaign.createdAt instanceof Date ? campaign.createdAt.toISOString() : campaign.createdAt,
-          updatedAt: campaign.updatedAt instanceof Date ? campaign.updatedAt.toISOString() : campaign.updatedAt
+         // updatedAt: campaign.updatedAt instanceof Date ? campaign.updatedAt.toISOString() : campaign.updatedAt
         });
       } catch (error: any) {
         reject(error);

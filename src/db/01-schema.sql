@@ -1,9 +1,25 @@
--- Drop existing tables in reverse order of dependency to avoid errors
 DROP TABLE IF EXISTS "campaignassets" CASCADE;
 DROP TABLE IF EXISTS "campaigns" CASCADE;
 DROP TABLE IF EXISTS "assets" CASCADE;
 DROP TABLE IF EXISTS "templates" CASCADE;
 DROP TABLE IF EXISTS "verticals" CASCADE;
+DROP TABLE IF EXISTS "users" CASCADE; 
+
+-- =================================================================
+--                              USERS
+-- =================================================================
+-- Create users table
+CREATE TABLE "users" (
+    "userId" SERIAL PRIMARY KEY,
+    "name" VARCHAR(100) NOT NULL,
+    "email" VARCHAR(200) UNIQUE NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
+    "mobile" VARCHAR(50) UNIQUE, 
+    "refreshToken" TEXT,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Create verticals table
 CREATE TABLE "verticals" (
     "verticalId" SERIAL PRIMARY KEY,

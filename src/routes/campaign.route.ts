@@ -1,7 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
+// Removed import of AuthRequest due to missing module or type declaration
 import createLogger from '../config/logger';
+
 
 const logger = createLogger(module);
 const CampaignRouter = Router();
@@ -9,6 +11,11 @@ const CampaignRouter = Router();
 CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
+    // @ts-expect-error: 'user' is added by authentication middleware
+    const user = req.user;
+    if (!user || !user.name) {
+        return res.status(401).json({ message: "User information is missing from the token." });
+    }
     if (!campaignname || !verticalId || !templateId || !assets) {
       return res.status(400).json({ 
         error: "Bad Request",
@@ -27,7 +34,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
       verticalId: Number(verticalId),
       templateId: Number(templateId),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdBy: user.name,
       assets: assets.map((id: string) => Number(id)),
     };
 
@@ -52,6 +59,11 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
 
 CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // @ts-expect-error: 'user' is added by authentication middleware
+    const user = req.user;
+    if (!user || !user.name) {
+      return res.status(401).json({ message: "User information is missing from the token." });
+    }
     const campaigns = await CampaignService.list(req.query);
     res.status(200).json(campaigns);
   } catch (error: any) {
@@ -63,6 +75,11 @@ CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFuncti
 
 CampaignRouter.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // @ts-expect-error: 'user' is added by authentication middleware
+    const user = req.user;
+    if (!user || !user.name) {
+      return res.status(401).json({ message: "User information is missing from the token." });
+    }
     const campaignId = Number(req.params.campaignId);
     if (isNaN(campaignId)) {
       logger.warn('A valid numeric campaignId is required.');
