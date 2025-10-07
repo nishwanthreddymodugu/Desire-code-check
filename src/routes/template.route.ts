@@ -76,6 +76,27 @@ templateRouter.get('/list', async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message || 'Internal Server Error' });
   }
 });
+
+templateRouter.get('/:templateId', async (req: Request, res: Response) => {
+  try {
+    const templateId = Number(req.params.templateId);
+    if (isNaN(templateId)) {
+      logger.error('A valid numeric templateId is required.');
+      return res.status(400).json({ message: 'A valid numeric templateId is required.' });
+    }
+
+    const template = await TemplateService.getById(templateId);
+    res.status(200).json(template);
+  } catch (error: any) {
+    if (error.message.includes('not found')) {
+      logger.error(`${error.message}`);
+      return res.status(404).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message || 'Internal Server Error' });
+  }
+});
+
+
 /* ---------------- TEMPLATE IMAGE UPLOAD ROUTE ---------------- */
 templateRouter.post(
   '/image/upload',
@@ -102,7 +123,7 @@ templateRouter.post(
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Internal Server Error';
       logger.error(message);
-      res.status(500).json({ error: message });
+      res.status(500).json({ message: message || 'Internal Server Error' });
     }
   }
 );

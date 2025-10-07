@@ -169,14 +169,12 @@ class CampaignService {
 public async uploadImage(
   campaignId: number,
   file: Express.Multer.File
-): Promise<{ campaignId: number; filename: string }> {
+): Promise<{ campaignId: number; filename: string; s3Key: string }> {
   if (!campaignId) {
-    logger.error('campaignId is required');
     return Promise.reject(new Error('campaignId is required'));
   }
 
   if (!file) {
-    logger.error('Image file is required');
     return Promise.reject(new Error('Image file is required'));
   }
 
@@ -190,13 +188,17 @@ public async uploadImage(
 
   try {
     const fileBuffer = await fs.readFile(file.path);
+    logger.info(`Successfully read file ${file.originalname}`);
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-    await fs.unlink(file.path);
-    logger.info(`Deleted local image file: ${file.originalname}`);
-    return { campaignId, filename: file.originalname };
+    try {
+      await fs.unlink(file.path);
+      logger.info(`Deleted local image file: ${file.originalname}`);
+    } catch (unlinkErr) {
+      logger.error(`Attempting to delete local file failed: ${file.path}`);
+    }
+    return { campaignId, filename: file.originalname, s3Key };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to upload image';
-    logger.error(message);
     return Promise.reject(new Error(message));
   }
 }
@@ -204,14 +206,12 @@ public async uploadImage(
 public async uploadCSV(
   campaignId: number,
   file: Express.Multer.File
-): Promise<{ campaignId: number; filename: string }> {
+): Promise<{ campaignId: number; filename: string; s3Key: string }> {
   if (!campaignId) {
-    logger.error('campaignId is required');
     return Promise.reject(new Error('campaignId is required'));
   }
 
   if (!file) {
-    logger.error('CSV file is required');
     return Promise.reject(new Error('CSV file is required'));
   }
 
@@ -225,13 +225,17 @@ public async uploadCSV(
 
   try {
     const fileBuffer = await fs.readFile(file.path);
+    logger.info(`Successfully read file ${file.originalname}`);
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-    await fs.unlink(file.path);
-    logger.info(`Deleted local CSV file: ${file.originalname}`);
-    return { campaignId, filename: file.originalname };
+    try {
+      await fs.unlink(file.path);
+      logger.info(`Deleted local file: ${file.originalname}`);
+    } catch (unlinkErr) {
+    logger.error(`Failed to delete local file ${file.path}: ${(unlinkErr as Error).message}`);
+    }
+    return { campaignId, filename: file.originalname, s3Key };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to upload CSV';
-    logger.error(message);
     return Promise.reject(new Error(message));
   }
 }
