@@ -10,40 +10,42 @@ import figmaService from './figma.service';
 import SearchService from './search.service'
 import { CampaignDocument } from '../interfaces/search.interface';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
+import fs from 'fs/promises';
+import s3Service from './s3.service';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
 class CampaignService {
   // List campaigns
-  public create(data: CampaignIn): Promise<CampaignCreateOut> {
+  public create(campaignInput: CampaignIn): Promise<CampaignCreateOut> {
     return new Promise(async (resolve, reject) => {
       const transaction = await sequelize.transaction();
       try {
-        logger.debug(`Service: Creating campaign '${data.campaignname}'`);
+        logger.debug(`Service: Creating campaign '${campaignInput.campaignname}'`);
 
         // --- Step 1: Validation ---
-        if (!data.campaignname || data.campaignname.trim() === '') {
+        if (!campaignInput.campaignname || campaignInput.campaignname.trim() === '') {
           await transaction.rollback();
           return reject(new Error("Validation failed: campaignname is required and cannot be empty."));
         }
         const [template, originalAssets, vertical] = await Promise.all([
-          TemplateDAO.findById(data.templateId),
-          AssetDAO.list({ where: { assetId: data.assets } }),
-          VerticalDAO.findById(data.verticalId)
+          TemplateDAO.findById(campaignInput.templateId),
+          AssetDAO.list({ where: { assetId: campaignInput.assets } }),
+          VerticalDAO.findById(campaignInput.verticalId)
         ]);
         if (!template) {
           await transaction.rollback();
-          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+          return reject(new Error(`Template with ID '${campaignInput.templateId}' does not exist.`));
         }
         if (!vertical) {
           await transaction.rollback();
-          return reject(new Error(`Vertical with ID '${data.verticalId}' does not exist.`));
+          return reject(new Error(`Vertical with ID '${campaignInput.verticalId}' does not exist.`));
         }
-        if (template.verticalId !== data.verticalId) {
+        if (template.verticalId !== campaignInput.verticalId) {
           await transaction.rollback();
-          return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
+          return reject(new Error(`Template with ID '${campaignInput.templateId}' does not belong to Vertical '${campaignInput.verticalId}'.`));
         }
-        if (originalAssets.length !== data.assets.length) {
+        if (originalAssets.length !== campaignInput.assets.length) {
           await transaction.rollback();
           return reject(new Error("One or more provided asset IDs do not exist."));
         }
@@ -58,17 +60,16 @@ class CampaignService {
 
         // --- Step 2: Main Logic ---
         const campaignData: CreationAttributes<Campaign> = {
-          campaignName: data.campaignname,
-          description: data.description,
-          fromDate: new Date(data.fromdate),
-          toDate: new Date(data.todate),
+          campaignName: campaignInput.campaignname,
+          description: campaignInput.description,
+          fromDate: new Date(campaignInput.fromdate),
+          toDate: new Date(campaignInput.todate),
           templateId: template.templateId,
           verticalId: template.verticalId,
           status: 'draft',
-          createdBy: data.createdBy.createdByUserID,
+          createdBy: campaignInput.createdByUserID,
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
-        
         const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
         const clonedFigmaIds = await Promise.all(clonePromises);
 
@@ -85,7 +86,7 @@ class CampaignService {
 
         // --- Step 3: Data Enrichment & Background Indexing ---
         try {
-            const campaignDoc: CampaignDocument = {
+            const campaignDocForSearch: CampaignDocument = {
                 campaignId: newCampaign.campaignId,
                 campaignname: newCampaign.campaignName,
                 description: newCampaign.description,
@@ -99,9 +100,9 @@ class CampaignService {
                 verticalName: vertical.verticalName,
                 templateName: template.templateName,
                 createdByuserId: newCampaign.createdBy!,
-                createdByName: data.createdBy.createdByName,
+                createdByName: campaignInput.createdByName,
             };
-            SearchService.addCampaignToIndex(campaignDoc);
+            await SearchService.addCampaignToIndex(campaignDocForSearch);
         } catch (searchError) {
             logger.error(`Failed to index campaign ${newCampaign.campaignId} after creation:`, searchError);
         }
@@ -128,7 +129,7 @@ class CampaignService {
         if (error.name === 'SequelizeUniqueConstraintError' && error.errors) {
           const uniqueError = error.errors.find((err: any) => err.path === 'campaignName');
           if (uniqueError) {
-            return reject(new Error(`A campaign with the name '${data.campaignname}' already exists.`));
+            return reject(new Error(`A campaign with the name '${campaignInput.campaignname}' already exists.`));
           }
         }
         
@@ -215,6 +216,80 @@ public getById(campaignId: number): Promise<CampaignGetOut> {
       return reject(error);
     }
   });
+}
+
+public async uploadImage(
+  campaignId: number,
+  file: Express.Multer.File
+): Promise<{ campaignId: number; filename: string; s3Key: string }> {
+  if (!campaignId) {
+    return Promise.reject(new Error('campaignId is required'));
+  }
+
+  if (!file) {
+    return Promise.reject(new Error('Image file is required'));
+  }
+
+  const s3Key = `campaigns/${campaignId}/images/${file.originalname}`;
+  const bucket = process.env.IMAGE_BUCKET;
+
+  if (!bucket) {
+    logger.error('IMAGE_BUCKET environment variable is not set');
+    return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
+  }
+
+  try {
+    const fileBuffer = await fs.readFile(file.path);
+    logger.info(`Successfully read file ${file.originalname}`);
+    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+    try {
+      await fs.unlink(file.path);
+      logger.info(`Deleted local image file: ${file.originalname}`);
+    } catch (unlinkErr) {
+      logger.error(`Attempting to delete local file failed: ${file.path}`);
+    }
+    return { campaignId, filename: file.originalname, s3Key };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to upload image';
+    return Promise.reject(new Error(message));
+  }
+}
+
+public async uploadCSV(
+  campaignId: number,
+  file: Express.Multer.File
+): Promise<{ campaignId: number; filename: string; s3Key: string }> {
+  if (!campaignId) {
+    return Promise.reject(new Error('campaignId is required'));
+  }
+
+  if (!file) {
+    return Promise.reject(new Error('CSV file is required'));
+  }
+
+  const s3Key = `campaigns/${campaignId}/csv/${file.originalname}`;
+  const bucket = process.env.IMAGE_BUCKET;
+
+  if (!bucket) {
+    logger.error('IMAGE_BUCKET environment variable is not set');
+    return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
+  }
+
+  try {
+    const fileBuffer = await fs.readFile(file.path);
+    logger.info(`Successfully read file ${file.originalname}`);
+    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+    try {
+      await fs.unlink(file.path);
+      logger.info(`Deleted local file: ${file.originalname}`);
+    } catch (unlinkErr) {
+    logger.error(`Failed to delete local file ${file.path}: ${(unlinkErr as Error).message}`);
+    }
+    return { campaignId, filename: file.originalname, s3Key };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to upload CSV';
+    return Promise.reject(new Error(message));
+  }
 }
 }
 

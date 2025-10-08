@@ -6,10 +6,8 @@ export interface CampaignIn {
     verticalId: number;
     templateId: number;
     assets: number[];
-    createdBy: {
-        createdByUserID: number;
-        createdByName: string;
-    };
+    createdByUserID: number;
+    createdByName: string;
 }
 export interface CampaignCreateOut {
     campaignId: number;

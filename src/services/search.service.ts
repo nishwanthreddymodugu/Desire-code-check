@@ -68,12 +68,11 @@ class SearchService {
                 mustClauses.push({
                     multi_match: {
                         query: q,
-                        fields: ["campaignname", "description","verticalName", "templateName", "createdByName"],
+                        fields: ["campaignname"],
                         fuzziness: "AUTO" 
                     }
                 });
             }
-
             // If the user provided a 'status' filter (like "active")...
             if (status) {
                 filterClauses.push({ term: { "status": status } });
@@ -90,7 +89,7 @@ class SearchService {
 
             const esQuery = {
                 index: 'campaign_search',
-                size: 10,
+                size: 25,
                 body: {
                     sort: [
                         { createdAt: { order: "desc" } }

@@ -7,18 +7,43 @@ const logger = createLogger(module);
 const CAMPAIGN_INDEX = 'campaign_search';
 class SearchClient {
     
+    //public async createCampaignIndex(): Promise<void> {
+    //     try {
+    //     const indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
+    //     if (!indexExists) {
+    //             await esClient.indices.create({ index: CAMPAIGN_INDEX });
+    //             logger.info(`Campaign index created successfully.`);
+    //         } else {
+    //             logger.info(`Campaign index already exists.`);
+    //         }
+    //     } catch (error) {
+    //         logger.error(`Failed to create campaign index:`, error);
+    //         throw error;
+    //     }
+    // }
     public async createCampaignIndex(): Promise<void> {
+        let indexExists = false;
+
+        // Check if index exists
         try {
-        const indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
+            // For Elasticsearch JS client v7+, .exists returns a boolean
+            indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
+        } catch (err) {
+            logger.error(`Failed to check if campaign index exists:`, err);
+            throw err; // rethrow to let outer catch handle it if needed
+        }
+
+        // Create index if it does not exist
         if (!indexExists) {
+            try {
                 await esClient.indices.create({ index: CAMPAIGN_INDEX });
                 logger.info(`Campaign index created successfully.`);
-            } else {
-                logger.info(`Campaign index already exists.`);
+            } catch (err) {
+                logger.error(`Failed to create campaign index:`, err);
+                throw err;
             }
-        } catch (error) {
-            logger.error(`Failed to create campaign index:`, error);
-            throw error;
+        } else {
+            logger.info(`Campaign index already exists.`);
         }
     }
 
@@ -27,19 +52,38 @@ class SearchClient {
      * If a card with the same ID already exists, it just updates it.
      * @param document The campaign data to be saved.
      */
+    // public async addOrUpdateCampaign(document: CampaignDocument): Promise<void> {
+    //     try {
+    //     await esClient.index({
+    //         index: CAMPAIGN_INDEX,
+    //         id: document.campaignId.toString(),
+    //         document: document,
+    //         refresh: true, // Make this change searchable immediately
+    //     });
+    //     } catch (error) {
+    //         logger.error(`Failed to add/update campaign:`, error);
+    //         throw error;
+    //     }
+    // }
     public async addOrUpdateCampaign(document: CampaignDocument): Promise<void> {
         try {
-        await esClient.index({
-            index: CAMPAIGN_INDEX,
-            id: document.campaignId.toString(),
-            document: document,
-            refresh: true, // Make this change searchable immediately
-        });
+            try {
+                await esClient.index({
+                    index: CAMPAIGN_INDEX,
+                    id: document.campaignId.toString(),
+                    document: document,
+                    refresh: true, // Make this change searchable immediately
+                });
+            } catch (err) {
+                logger.error(`Failed to index campaign document (ID: ${document.campaignId}):`, err);
+                throw err; // rethrow to outer catch if needed
+            }
         } catch (error) {
-            logger.error(`Failed to add/update campaign:`, error);
+            logger.error(`Error in addOrUpdateCampaign:`, error);
             throw error;
         }
     }
+    
 
     /**
      * Takes a fully prepared search plan and executes it.
@@ -77,7 +121,6 @@ class SearchClient {
         }
     }
 }
-
 
 
 export default new SearchClient();

@@ -96,7 +96,7 @@ app.get('/routes', (_req: Request, res: Response) => {
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    logger.error(`Error: ${err.message} | Stack: ${err.stack}`);
+    logger.error(`${err.message} | Stack: ${err.stack}`);
     res.status(500).json({
         message: "An internal server error occurred",
         error: err.message,
