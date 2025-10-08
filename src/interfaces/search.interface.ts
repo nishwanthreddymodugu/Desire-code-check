@@ -12,6 +12,6 @@ export interface CampaignDocument {
     templateName: string;
     createdBy?: string | null;
     createdAt: string | Date;
-    userId: number; // The ID of the user who created it
+    createdByuserId: number; // The ID of the user who created it
     createdByName: string; // The name of the user for searching
 }

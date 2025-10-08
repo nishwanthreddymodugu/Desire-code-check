@@ -36,8 +36,8 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
       verticalId: Number(verticalId),
       templateId: Number(templateId),
       createdBy: {
-        userId: user.id!,
-        name: user.name
+        createdByUserID: user.id!,
+        createdByName: user.name
       },
       assets: assets.map((id: string) => Number(id)),
     };

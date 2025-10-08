@@ -7,14 +7,6 @@ import { CampaignDocument } from '../interfaces/search.interface';
 import createlogger from '../config/logger';
 const logger = createlogger(module);
 
-/**
- * This script fetches campaigns from the PostgreSQL database and bulk indexes them into Elasticsearch.
- * It can be filtered by a date range provided as command-line arguments.
- *
- * Usage:
- * - To index all campaigns: ts-node src/scripts/index-campaigns.ts
- * - To index for a date range: ts-node src/scripts/index-campaigns.ts 2025-01-01 2025-03-31
- */
 async function runIndexing() {
     console.time("Total Indexing Time");
     logger.info("--- Starting Bulk Campaign Indexing ---");
@@ -65,7 +57,7 @@ async function runIndexing() {
             updatedAt: campaign.updatedAt,
             verticalName: campaign.vertical!.verticalName, // '!' asserts that the included model is not null
             templateName: campaign.template!.templateName,
-            userId: campaign.createdBy!,
+            createdByuserId: campaign.createdBy!,
             createdByName: "User Name Here", // In a real app, you would join the User model to get this
         }));
 

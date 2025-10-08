@@ -90,13 +90,11 @@ class SearchService {
 
             const esQuery = {
                 index: 'campaign_search',
-                // --- THIS IS THE FIX ---
-                size: 10, // Add the limit to 10 results
+                size: 10,
                 body: {
-                    sort: [ // Add the sort order to get the most recent first
+                    sort: [
                         { createdAt: { order: "desc" } }
                     ],
-                    // --------------------
                     query: {
                         bool: {
                             must: mustClauses.length > 0 ? mustClauses : { match_all: {} },
@@ -106,7 +104,6 @@ class SearchService {
                 }
             };
             logger.info('Executing Elasticsearch query', { query: esQuery.body });
-            // --------------------
             
             const results = await SearchClient.searchCampaigns({
                 index: 'campaign_search',
@@ -116,7 +113,6 @@ class SearchService {
             return results.hits.hits.map((hit: any) => hit._source);
         } catch (error) {
             logger.error('Search operation failed:', error);
-            // Re-throw validation errors as-is, but wrap other errors
             if (error instanceof Error && error.message.includes('Validation failed:')) {
                 throw error;
             }

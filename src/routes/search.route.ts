@@ -1,7 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import SearchService from '../services/search.service';
 import { CampaignDocument } from '../interfaces/search.interface';
-//import { authMiddleware } from '../middlewares/auth.middleware';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);

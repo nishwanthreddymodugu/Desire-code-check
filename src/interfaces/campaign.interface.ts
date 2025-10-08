@@ -7,8 +7,8 @@ export interface CampaignIn {
     templateId: number;
     assets: number[];
     createdBy: {
-        userId: number;
-        name: string;
+        createdByUserID: number;
+        createdByName: string;
     };
 }
 export interface CampaignCreateOut {
@@ -47,6 +47,6 @@ export interface CampaignGetOut {
     createdByUserID: number | null; // Corrected property name
     createdAt: string;
     // --- NEW ENRICHED FIELDS ---
-    verticalName: string;
-    templateName: string;
+   // verticalName: string;
+    //templateName: string;
 }

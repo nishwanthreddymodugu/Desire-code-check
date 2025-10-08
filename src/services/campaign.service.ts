@@ -65,7 +65,7 @@ class CampaignService {
           templateId: template.templateId,
           verticalId: template.verticalId,
           status: 'draft',
-          createdBy: data.createdBy.userId,
+          createdBy: data.createdBy.createdByUserID,
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
         
@@ -96,11 +96,10 @@ class CampaignService {
                 templateId: newCampaign.templateId,
                 assets: createdAssets.map(a => a.assetId),
                 createdAt: newCampaign.createdAt,
-                //updatedAt: newCampaign.updatedAt,
                 verticalName: vertical.verticalName,
                 templateName: template.templateName,
-                userId: newCampaign.createdBy!,
-                createdByName: data.createdBy.name,
+                createdByuserId: newCampaign.createdBy!,
+                createdByName: data.createdBy.createdByName,
             };
             SearchService.addCampaignToIndex(campaignDoc);
         } catch (searchError) {
@@ -175,7 +174,6 @@ class CampaignService {
             templateId: c.templateId,
             createdBy: c.createdBy ?? null,
             createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
-            //updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : c.updatedAt
           }))
         );
       } catch (error: any) {
@@ -189,16 +187,12 @@ public getById(campaignId: number): Promise<CampaignGetOut> {
     try {
       logger.debug(`Service: Attempting to fetch campaign by ID: ${campaignId}`);
 
-      // The DAO's findById method already correctly fetches the related models.
       const campaign = await CampaignDAO.findById(campaignId);
       
       if (!campaign) {
-        // Reject the promise with a clear error message.
         return reject(new Error('Campaign not found'));
       }
       
-      // The service now "plates the dish" correctly, mapping all the data
-      // from the raw model to the clean output interface.
       const campaignOut: CampaignGetOut = {
         campaignId: campaign.campaignId,
         campaignname: campaign.campaignName,
@@ -209,15 +203,11 @@ public getById(campaignId: number): Promise<CampaignGetOut> {
         verticalId: campaign.verticalId,
         templateId: campaign.templateId,
         assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
-        createdByUserID: campaign.createdBy ?? null, // Use the correct property name
+        createdByUserID: campaign.createdBy ?? null,
         createdAt: campaign.createdAt.toISOString(),
-        // Add the enriched names from the eagerly loaded models.
-        verticalName: campaign.vertical ? campaign.vertical.verticalName : 'N/A',
-        templateName: campaign.template ? campaign.template.templateName : 'N/A',
       };
 
       logger.info(`Service: Fetched campaign by ID: ${campaignId}`);
-      // On success, the promise resolves with the final, enriched object.
       return resolve(campaignOut);
       
     } catch (error: any) {
