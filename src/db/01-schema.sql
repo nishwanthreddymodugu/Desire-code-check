@@ -42,9 +42,7 @@ CREATE TABLE "assets" (
     "updatedBy" VARCHAR(100),
     "deleted" BOOLEAN DEFAULT FALSE,
     "createdAt" TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
-    "prod_image_width" INTEGER DEFAULT 200,   
-    "prod_image_height" INTEGER DEFAULT 200  
+    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create campaigns table

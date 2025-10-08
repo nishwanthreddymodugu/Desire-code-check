@@ -2,9 +2,55 @@ import { Router, Request, Response, NextFunction } from 'express';
 import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
 import createLogger from '../config/logger';
-
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
 const logger = createLogger(module);
 const router = Router();
+
+// Common MAX_FILE_SIZE for images and CSVs
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+
+/* ---------------- IMAGE UPLOAD CONFIG ---------------- */
+const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
+fs.mkdir(imageUploadDir, { recursive: true });
+
+const imageStorage = multer.diskStorage({
+  destination: (req, file, cb) => { cb(null, imageUploadDir); },
+  filename: (req, file, cb) => { cb(null, file.originalname); },
+});
+
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: (req, file, cb) => {
+    const allowedExts = ['.png', '.jpg', '.jpeg'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExts.includes(ext)) { cb(null, true); }
+    else { cb(new Error('Only .png, .jpg and .jpeg image formats are allowed!')); }
+  },
+});
+
+/* ---------------- CSV UPLOAD CONFIG ---------------- */
+const csvUploadDir = path.join(process.cwd(), 'uploads', 'csv-for-campaigns');
+fs.mkdir(csvUploadDir, { recursive: true });
+
+const csvStorage = multer.diskStorage({
+  destination: (req, file, cb) => { cb(null, csvUploadDir); },
+  filename: (req, file, cb) => { cb(null, file.originalname); },
+});
+
+const csvUpload = multer({
+  storage: csvStorage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.toLowerCase().endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed. Please upload a valid .csv file.'));
+    }
+  },
+});
 
 router.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -50,7 +96,7 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
   try {
     const campaignId = Number(req.params.campaignId);
     if (isNaN(campaignId)) {
-      logger.warn('A valid numeric campaignId is required.');
+      logger.error('A valid numeric campaignId is required.');
       return res.status(400).json({ message: 'A valid numeric campaignId is required.' });
     }
 
@@ -61,6 +107,55 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
     let status = 500;
     if (/not found/i.test(error.message)) status = 404;
     res.status(status).json({ message: error.message || 'Internal Server Error' });
+  }
+});
+/* ---------------- IMAGE UPLOAD ROUTE ---------------- */
+router.post('/image/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const files = req.files as Express.Multer.File[];
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+
+  if (!files || files.length === 0) {
+    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+  }
+
+  try {
+    const results = await Promise.all(files.map(file => CampaignService.uploadImage(Number(campaignId), file)));
+    res.status(200).json(results);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
+  }
+});
+
+/* ---------------- CSV UPLOAD ROUTE ---------------- */
+router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const files = req.files as Express.Multer.File[];
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+
+  if (!files || files.length === 0) {
+    logger.error('CSV file(s) are required in "csv" key.');
+    return res.status(400).json({ message: 'CSV file(s) are required in "csv" key.' });
+  }
+
+  try {
+    const results = await Promise.all(files.map(file => CampaignService.uploadCSV(Number(campaignId), file)));
+    res.status(200).json(results);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
   }
 });
 
