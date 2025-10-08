@@ -90,8 +90,6 @@ IMAGE_BUCKET=local-desire-image-assets
 IMAGE_GEN_QUEUE=local-desire-image-request-queue
 ```
 
----
-
 ## 🛠️ Database Setup (Crucial Step)
 
 This project uses SQL scripts to manage the database schema and seed data. Run these commands in the correct order:

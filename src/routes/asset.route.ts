@@ -40,7 +40,7 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const templateId = Number(req.query.templateId);
     if (isNaN(templateId)) {
-      logger.warn('A valid numeric templateId query parameter is required.');
+      logger.error('A valid numeric templateId query parameter is required.');
       return res.status(400).json({ message: 'A valid numeric templateId query parameter is required.' });
     }
 
