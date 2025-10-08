@@ -2,8 +2,10 @@ import { CreationAttributes, FindOptions } from 'sequelize';
 import TemplateDAO from '../daos/template.dao';
 import VerticalDAO from '../daos/vertical.dao';
 import { Template } from '../models/template';
-import { TemplateIn, TemplateOut } from '../interfaces/template.interface';
+import { TemplateIn, TemplateOut, TemplateGetOut } from '../interfaces/template.interface';
 import createLogger from '../config/logger';
+import fs from 'fs/promises'; 
+import s3Service from './s3.service';
 
 const logger = createLogger(module);
 
@@ -88,6 +90,77 @@ class TemplateService {
         reject(error);
       }
     });
+  }
+  
+  public getById(templateId: number): Promise<TemplateGetOut> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        logger.debug(`Attempting to fetch template by ID: ${templateId}`);
+
+        const template = await TemplateDAO.findById(templateId);
+
+        if (!template) {
+          return reject(new Error('Template not found'));
+        }
+
+        const result: TemplateGetOut = {
+          templateId: template.templateId,
+          templatename: template.templateName,
+          verticalId: template.verticalId,
+          stylePrompt: template.stylePrompt,
+          createdBy: template.createdBy,
+          updatedBy: template.updatedBy,
+          deleted: template.deleted,
+          createdAt: template.createdAt,
+          updatedAt: template.updatedAt,
+        };
+
+        logger.info(`Fetched template by ID: ${templateId}, Name: ${template.templateName}`);
+        resolve(result);
+      }catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch template';
+      logger.error(`Error fetching template ID ${templateId}: ${message}`);
+      reject(new Error(message));
+      }
+    });
+  }
+
+  public async uploadImage(
+    verticalId: number,
+    templateId: number,
+    file: Express.Multer.File
+  ): Promise<{ verticalId: number; templateId: number; filename: string; s3Key: string }> {
+    if (!verticalId || !templateId) {
+      return Promise.reject(new Error('verticalId and templateId are required'));
+    }
+
+    if (!file) {
+      return Promise.reject(new Error('Image file is required'));
+    }
+
+    const s3Key = `verticals/${verticalId}/templates/${templateId}/images/${file.originalname}`;
+    const bucket = process.env.IMAGE_BUCKET;
+
+    if (!bucket) {
+      logger.error('IMAGE_BUCKET environment variable is not set');
+      return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
+    }
+
+    try {
+      const fileBuffer = await fs.readFile(file.path);
+      logger.info(`Successfully read file ${file.originalname}`);
+      await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+      try {
+        await fs.unlink(file.path);
+        logger.info(`Deleted local template image file: ${file.originalname}`);
+      } catch (unlinkErr) {
+        logger.error(`Attempting to delete local file failed: ${file.path}, error: ${(unlinkErr as Error).message}`);
+      }
+      return { verticalId, templateId, filename: file.originalname, s3Key };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to upload template image';
+      return Promise.reject(new Error(message));
+    }
   }
 }
 

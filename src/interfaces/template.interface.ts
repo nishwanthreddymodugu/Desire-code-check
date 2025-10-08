@@ -11,3 +11,16 @@ export interface TemplateOut {
     templatename: string;
     verticalId: number;
 }
+
+// The data shape for the final API response when getting a single template
+export interface TemplateGetOut {
+    templateId: number;
+    templatename: string;
+    verticalId: number;
+    stylePrompt: string | null;
+    createdBy: string | null;
+    updatedBy: string | null;
+    deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
