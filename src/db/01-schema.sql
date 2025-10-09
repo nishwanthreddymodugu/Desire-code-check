@@ -95,5 +95,9 @@ CREATE TABLE IF NOT EXISTS image_gen_requests (
   updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Add columns for product image dimensions to existing assets table
+ALTER TABLE "assets"
+ADD COLUMN IF NOT EXISTS "prod_image_width" INTEGER DEFAULT 200;
 
-
+ALTER TABLE "assets"
+ADD COLUMN IF NOT EXISTS "prod_image_height" INTEGER DEFAULT 200;
