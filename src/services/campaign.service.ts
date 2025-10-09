@@ -239,5 +239,22 @@ public async uploadCSV(
     return Promise.reject(new Error(message));
   }
 }
+
+public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
+  const bucket = process.env.S3_BUCKET_NAME;
+  if (!bucket) {
+    throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+  }
+  try {
+    const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+    if (!objects || objects.length === 0) {
+      throw new Error('No file found for this prefix');
+    }
+    return objects[0].body;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+    throw new Error(message);
+  }
+}
 }
 export default new CampaignService(); 

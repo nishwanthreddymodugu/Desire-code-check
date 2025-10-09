@@ -3,6 +3,7 @@ import VerticalDAO from '../daos/vertical.dao';
 import { Vertical } from '../models/vertical';
 import { VerticalIn, VerticalOut } from '../interfaces/vertical.interface';
 import createLogger from '../config/logger';
+import s3Service from './s3.service';
 
 const logger = createLogger(module);
 
@@ -61,7 +62,33 @@ class VerticalService {
     } catch (error: any) {
       throw error;
     }
+
   }
+  public async getTemplateImages(verticalId: number, templateId: number): Promise<string[]> {
+    const bucket = process.env.S3_BUCKET_NAME;
+    if (!bucket) {
+      throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+    }
+
+    const s3Prefix = `verticals/${verticalId}/templates/${templateId}/images/`;
+
+    try {
+      const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+
+      if (!objects || objects.length === 0) {
+        throw new Error('No images found for this template');
+      }
+
+      // Return full S3 key paths
+      const images = objects.map(obj => obj.key);
+
+      return images;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to retrieve template images';
+      throw new Error(message);
+    }
+  }
+
 }
 
 export default new VerticalService();
