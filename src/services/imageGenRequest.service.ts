@@ -55,7 +55,8 @@ class ImageGenRequestService {
     try {
       await sqsService.enqueueMessage(QUEUE_NAME, {
         operation: 'generate_image',
-        request_id: created.id
+        request_id: created.id,
+        campaign_id: input.campaignId // localstack requires this to match the queue
       });
 
       await ImageGenRequestDAO.updateStatus(created.id, 'pending');

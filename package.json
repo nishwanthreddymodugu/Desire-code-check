@@ -9,7 +9,8 @@
     "dev": "concurrently \"tsc --watch\" \"nodemon -q dist/server.js\"",
     "test": "jest",
     "db:reset": "ts-node src/scripts/reset-db.ts",
-    "db:seed": "ts-node src/scripts/seed-db.ts"
+    "db:seed": "ts-node src/scripts/seed-db.ts",
+    "start-listener": "ts-node src/scripts/listener.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,13 +19,13 @@
     "@aws-sdk/client-s3": "^3.620.0",
     "@aws-sdk/client-sqs": "^3.620.0",
     "aws-sdk": "^2.1692.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    
     "pg": "^8.12.0",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
