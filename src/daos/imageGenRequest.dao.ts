@@ -1,73 +1,3 @@
-// import { CreationAttributes } from 'sequelize';
-// import { ImageGenRequest } from '../models/image_gen'; // adjust to your model file
-// import createLogger from '../config/logger';
-// const logger = createLogger(module);
-
-// class ImageGenDAO {
-//   async create(data: CreationAttributes<ImageGenRequest>) {
-//     try {
-//       return await ImageGenRequest.create(data);
-//     } catch (e) {
-//       logger.error(`Create image_gen_request failed: ${(e as Error).message}`);
-//       throw e;
-//     }
-//   }
-
-//   async list(campaignId: number, status?: string) {
-//     try {
-//       const where: any = { campaignId };
-//       if (status) where.status = status;
-//       return await ImageGenRequest.findAll({ where, attributes: ['id', 'prompt', 'status'] });
-//     } catch (e) {
-//       logger.error(`List image_gen_requests failed: ${(e as Error).message}`);
-//       throw e;
-//     }
-//   }
-
-//   async findById(id: number, campaignId: number) {
-//     try {
-//       return await ImageGenRequest.findOne({
-//         where: { id, campaignId },
-//         attributes: [
-//           'id',
-//           'prompt',
-//           'verticalId',
-//           'templateId',
-//           ['figmaProjectId', 'projectId'],
-//           'use_ref_img',
-//           'use_template_prompt',
-//           'use_user_given_imgs',
-//           'user_given_imgs',
-//           'status',
-//         ],
-//       });
-//     } catch (e) {
-//       logger.error(`Find image_gen_request ${id} failed: ${(e as Error).message}`);
-//       throw e;
-//     }
-//   }
-
-//   async getStatus(id: number, campaignId: number) {
-//     try {
-//       const row = await ImageGenRequest.findOne({ where: { id, campaignId }, attributes: ['status'] });
-//       return row?.status ?? null;
-//     } catch (e) {
-//       logger.error(`Get status for ${id} failed: ${(e as Error).message}`);
-//       throw e;
-//     }
-//   }
-
-//   async updateStatus(id: number, campaignId: number, newStatus: string) {
-//     try {
-//       await ImageGenRequest.update({ status: newStatus }, { where: { id, campaignId } });
-//     } catch (e) {
-//       logger.error(`Update status for ${id} failed: ${(e as Error).message}`);
-//       throw e;
-//     }
-//   }
-// }
-
-// export default new ImageGenDAO();
 import { ImageGenRequest } from '../models/image_gen';
 
 export type CreateImageGenRequestInput = {
@@ -133,7 +63,7 @@ class ImageGenRequestDAO {
         'verticalId',
         'campaignId',
         'templateId',
-        'figmaProjectId', 
+        // 'figmaProjectId', 
         'use_ref_img',
         'use_template_prompt',
         'use_user_given_imgs',
@@ -152,7 +82,7 @@ class ImageGenRequestDAO {
       verticalId: plain.verticalId as number,
       campaignId: plain.campaignId as number,
       templateId: plain.templateId as number,
-      figmaProjectId: (plain.figmaProjectId ?? null) as number | null,
+      // figmaProjectId: (plain.figmaProjectId ?? null) as number | null,
       use_ref_img: plain.use_ref_img as boolean,
       use_template_prompt: plain.use_template_prompt as boolean,
       use_user_given_imgs: plain.use_user_given_imgs as boolean,
@@ -163,4 +93,3 @@ class ImageGenRequestDAO {
 }
 
 export default new ImageGenRequestDAO();
-

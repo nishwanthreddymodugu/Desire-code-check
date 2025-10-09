@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS image_gen_requests (
   campaignId INTEGER NOT NULL REFERENCES "campaigns"("campaignId") ON DELETE CASCADE,
   verticalId INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
   templateId INTEGER NOT NULL REFERENCES "templates"("templateId") ON DELETE CASCADE,
-  figmaProjectId INTEGER NULL,
   use_ref_img BOOLEAN NOT NULL DEFAULT FALSE,
   use_template_prompt BOOLEAN NOT NULL DEFAULT FALSE,
   use_user_given_imgs BOOLEAN NOT NULL DEFAULT FALSE,
