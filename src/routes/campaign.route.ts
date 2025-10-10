@@ -159,4 +159,29 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
   }
 });
 
+/* ---------------- EXPORTED IMAGE UPLOAD ROUTE ---------------- */
+router.post('/image/exported/upload', imageUpload.single('image'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const file = req.file as Express.Multer.File;
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+
+  if (!file) {
+    logger.error('Valid image file (.png, .jpg, .jpeg) is required');
+    return res.status(400).json({ message: 'Valid image file (.png, .jpg, .jpeg) is required' });
+  }
+
+  try {
+    const result = await CampaignService.uploadExportedImage(Number(campaignId), file);
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
+  }
+});
+
 export default router;
