@@ -3,6 +3,7 @@ import AuthService from '../services/auth.service';
 import { IUser } from '../interfaces/user.interface';
 import createlogger from '../config/logger';
 import validator from 'validator'; 
+import { authMiddleware } from '../middlewares/auth.middleware';
 const logger = createlogger(module);
 const router = Router();
 // ==================== REGISTER ====================
@@ -72,6 +73,29 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
   } catch (error: any) {
     logger.error(`Route Error in /login: ${error.message}`);
     res.status(401).json({ message: error.message });
+  }
+});
+
+router.get('/me',authMiddleware, async (req: Request, res: Response) => {
+  logger.info("Route: GET /auth/me called");
+  try {
+    // The authMiddleware has already validated the token and attached the user payload
+    const user = (req as Request & { user: IUser }).user;
+
+    if (!user) {
+      // This is a safeguard, middleware should prevent this
+      return res.status(401).json({ message: 'User payload not found after authentication.' });
+    }
+
+    // Return the required fields
+    res.status(200).json({
+      username: user.name,
+      email: user.email,
+    });
+
+  } catch (error: any) {
+    logger.error(`Route Error in /me: ${error.message}`);
+    res.status(500).json({ message: 'An internal server error occurred.' });
   }
 });
 
