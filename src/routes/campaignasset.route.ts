@@ -25,7 +25,7 @@ router.get('/:campaignId/:assetId/get', async (req: Request, res: Response) => {
       return res.status(404).json({ message });
     }
     logger.error(message);
-    res.status(500).json({ message });
+    res.status(500).json({ error: message || 'Internal Server Error'});
   }
 });
 

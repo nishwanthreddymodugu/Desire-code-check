@@ -130,7 +130,7 @@ router.post('/image/upload', imageUpload.array('images'), async (req: Request, r
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     logger.error(message);
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: message || 'Internal Server Error'});
   }
 });
 
@@ -155,7 +155,7 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     logger.error(message);
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: message || 'Internal Server Error'});
   }
 });
 
@@ -180,7 +180,7 @@ router.post('/image/exported/upload', imageUpload.single('image'), async (req: R
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     logger.error(message);
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: message || 'Internal Server Error'});
   }
 });
 
