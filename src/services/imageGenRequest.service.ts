@@ -58,6 +58,7 @@ class ImageGenRequestService {
         request_id: created.id,
         campaign_id: input.campaignId // localstack requires this to match the queue
       });
+      console.log(`Enqueued SQS message for request ${created.id}`);
 
       await ImageGenRequestDAO.updateStatus(created.id, 'pending');
 
