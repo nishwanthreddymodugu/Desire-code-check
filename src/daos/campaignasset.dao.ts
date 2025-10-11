@@ -3,7 +3,7 @@ import createLogger from '../config/logger';
 const logger = createLogger(module);
 
 class CampaignAssetDAO {
-  public async findByCampaignAndAsset(campaignId: number, assetId: number): Promise<CampaignAsset | null> {
+  public async findByCampaignAsset(campaignId: number, assetId: number): Promise<CampaignAsset | null> {
     try {
       return await CampaignAsset.findOne({ where: { campaignId, assetId } });
     } catch (error) {

@@ -264,7 +264,6 @@ public async uploadExportedImage(
     logger.info(`Successfully read exported image: ${file.originalname}`);
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
 
-    // Delete local copy
     try {
       await fs.unlink(file.path);
       logger.info(`Deleted local exported image: ${file.originalname}`);

@@ -55,10 +55,6 @@ Install all the necessary packages defined in `package.json`:
 ```bash
 npm install
 ```
-We use Multer as a middleware for handling file uploads in our Node.js + Express backend.
-```bash
-npm install multer 
-```
 
 ### 3. Configure Environment Variables
 

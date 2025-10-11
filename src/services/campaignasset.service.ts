@@ -4,12 +4,12 @@ import createLogger from '../config/logger';
 const logger = createLogger(module);
 
 class CampaignAssetService {
-  public getByCampaignAndAsset(campaignId: number, assetId: number): Promise<CampaignAssetGetOut> {
+  public getByCampaignAsset(campaignId: number, assetId: number): Promise<CampaignAssetGetOut> {
     return new Promise(async (resolve, reject) => {
-      try {
         logger.debug(`Attempting to fetch campaign asset for campaignId=${campaignId}, assetId=${assetId}`);
-
-        const asset = await CampaignAssetDAO.findByCampaignAndAsset(campaignId, assetId);
+      
+      try{
+        const asset = await CampaignAssetDAO.findByCampaignAsset(campaignId, assetId);
 
         if (!asset) {
           return reject(new Error('Asset not found for this campaign'));

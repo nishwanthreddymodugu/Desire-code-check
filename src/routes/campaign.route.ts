@@ -178,9 +178,9 @@ router.post('/image/exported/upload', imageUpload.single('image'), async (req: R
     const result = await CampaignService.uploadExportedImage(Number(campaignId), file);
     res.status(200).json(result);
   } catch (err: unknown) {
+    logger.error(err); 
     const message = err instanceof Error ? err.message : 'Internal Server Error';
-    logger.error(message);
-    res.status(500).json({ error: message || 'Internal Server Error'});
+    res.status(500).json({ error: message });
   }
 });
 
