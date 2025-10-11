@@ -35,7 +35,7 @@ CREATE TABLE "verticals" (
 CREATE TABLE "templates" (
     "templateId" SERIAL PRIMARY KEY,
     "templateName" VARCHAR(100) NOT NULL,
-    "verticalId" INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
+    "verticalId" INTEGER NOT NULL REFERENCES "verticals"("verticalId"),
     "stylePrompt" TEXT,
     "createdBy" VARCHAR(100),
     "updatedBy" VARCHAR(100),
@@ -51,8 +51,8 @@ CREATE TABLE "assets" (
     "description" TEXT,
     "figmaURL" VARCHAR(255),
     "figmaId" VARCHAR(100),
-    "verticalId" INTEGER REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
-    "templateId" INTEGER REFERENCES "templates"("templateId") ON DELETE CASCADE,
+    "verticalId" INTEGER REFERENCES "verticals"("verticalId"),
+    "templateId" INTEGER REFERENCES "templates"("templateId"),
     "stylePrompt" TEXT,
     "createdBy" VARCHAR(100),
     "updatedBy" VARCHAR(100),
@@ -69,8 +69,8 @@ CREATE TABLE "campaigns" (
     "fromDate" TIMESTAMPTZ NOT NULL,
     "toDate" TIMESTAMPTZ NOT NULL,
     "status" VARCHAR(50),
-    "verticalId" INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
-    "templateId" INTEGER NOT NULL REFERENCES "templates"("templateId") ON DELETE CASCADE,
+    "verticalId" INTEGER NOT NULL REFERENCES "verticals"("verticalId"),
+    "templateId" INTEGER NOT NULL REFERENCES "templates"("templateId"),
     "createdBy" INTEGER REFERENCES "users"("userId") ON DELETE SET NULL,
     "updatedBy" VARCHAR(100),
     "deleted" BOOLEAN DEFAULT FALSE,
@@ -80,8 +80,8 @@ CREATE TABLE "campaigns" (
 
 -- Create campaignassets table (junction table)
 CREATE TABLE "campaignassets" (
-    "campaignId" INTEGER NOT NULL REFERENCES "campaigns"("campaignId") ON DELETE CASCADE,
-    "assetId" INTEGER NOT NULL REFERENCES "assets"("assetId") ON DELETE CASCADE,
+    "campaignId" INTEGER NOT NULL REFERENCES "campaigns"("campaignId"),
+    "assetId" INTEGER NOT NULL REFERENCES "assets"("assetId"),
     "assetname" VARCHAR(100),
     "clonedFigmaId" VARCHAR(100),
     "createdBy" VARCHAR(100),
