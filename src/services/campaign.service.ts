@@ -263,14 +263,12 @@ public async uploadExportedImage(
     const fileBuffer = await fs.readFile(file.path);
     logger.info(`Successfully read exported image: ${file.originalname}`);
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-
     try {
       await fs.unlink(file.path);
       logger.info(`Deleted local exported image: ${file.originalname}`);
     } catch (unlinkErr) {
       logger.error(`Failed to delete local file: ${file.path}`);
     }
-
     return { campaignId, filename: file.originalname, s3Key };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to upload exported image';
