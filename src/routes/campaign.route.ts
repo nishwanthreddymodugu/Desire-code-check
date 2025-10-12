@@ -216,7 +216,6 @@ router.post(
       res.status(200).json({
         message: 'Asset image uploaded successfully',
         ...result,
-       // s3Url: `https://${process.env.IMAGE_BUCKET}.s3.amazonaws.com/${result.s3Key}`,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Internal Server Error';
