@@ -88,7 +88,7 @@ class VerticalService {
       throw new Error(message);
     }
   }
-
+// To get single image
   public async getTemplateImage(verticalId: number, templateId: number, imageName: string): Promise<Buffer> {
   const bucket = process.env.S3_BUCKET_NAME;
   if (!bucket) {
