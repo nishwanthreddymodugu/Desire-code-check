@@ -114,6 +114,7 @@ router.get('/:campaignId/image/requests/:requestId/get', async (req: Request, re
     return res.status(200).json({
       id: row.id,
       prompt: row.prompt,
+      camapignId: row.campaignId,
       verticalId: row.verticalId,
       templateId: row.templateId,
       // projectId: row.figmaProjectId ?? null,
