@@ -64,6 +64,7 @@ class VerticalService {
     }
 
   }
+
   public async getTemplateImages(verticalId: number, templateId: number): Promise<string[]> {
     const bucket = process.env.S3_BUCKET_NAME;
     if (!bucket) {
@@ -88,6 +89,27 @@ class VerticalService {
     }
   }
 
+  public async getTemplateImage(verticalId: number, templateId: number, imageName: string): Promise<Buffer> {
+  const bucket = process.env.S3_BUCKET_NAME;
+  if (!bucket) {
+    throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+  }
+
+  const s3Prefix = `verticals/${verticalId}/templates/${templateId}/images/${imageName}`;
+
+  try {
+    const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+
+    if (!objects || objects.length === 0) {
+      throw new Error('Image not found for this prefix');
+    }
+    return objects[0].body;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+    throw new Error(message);
+  }
 }
+}
+
 
 export default new VerticalService();
