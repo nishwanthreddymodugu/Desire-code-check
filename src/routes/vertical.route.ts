@@ -67,34 +67,4 @@ verticalRouter.get('/:verticalId/templates/:templateId/images', async (req, res)
     res.status(status).json({ error: message });
   }
 });
-
-// Get single image by verticalId, templateId, and imageName
-verticalRouter.get('/:verticalId/templates/:templateId/images/:imageName', async (req, res) => {
-  try {
-    const { verticalId, templateId, imageName } = req.params;
-    const vId = Number(verticalId);
-    const tId = Number(templateId);
-
-    if (isNaN(vId) || isNaN(tId) || !imageName) {
-      return res.status(400).json({ error: 'verticalId, templateId, and imageName are required and must be valid' });
-    }
-
-    const imageBuffer = await VerticalService.getTemplateImage(vId, tId, imageName);
-
-    // Detect content type from extension
-    const ext = imageName.split('.').pop()?.toLowerCase();
-    let contentType = '';
-    if (ext === 'png') contentType = 'image/png';
-    else if (ext === 'jpg' || ext === 'jpeg') contentType = 'image/jpeg';
-    else return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
-
-    res.setHeader('Content-Type', contentType);
-    res.send(imageBuffer);
-  } catch (error: any) {
-    const message = error.message || 'Failed to retrieve image';
-    const status = /not found/i.test(message) ? 404 : 500;
-    logger.error(message);
-    res.status(status).json({ error: message });
-  }
-});
 export default verticalRouter;
