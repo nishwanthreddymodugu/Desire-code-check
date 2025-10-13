@@ -5,6 +5,8 @@ import createLogger from '../config/logger';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
+import campaignService from '../services/campaign.service';
+
 const logger = createLogger(module);
 const router = Router();
 
@@ -158,5 +160,69 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
     res.status(500).json({ error: message });
   }
 });
+
+/* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+router.get('/:campaignId/images/:imageName', async (req, res) => {
+  try {
+    const { campaignId, imageName } = req.params;
+    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
+
+    const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
+
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = '';
+
+    if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else {
+      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.send(imageBuffer);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+/* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
+router.post(
+  '/image/asset/upload',
+  imageUpload.single('image'),
+  async (req: Request, res: Response) => {
+    const { campaignId, assetId, requestId } = req.body;
+    const file = req.file;
+
+    if (!campaignId || !assetId || !requestId) {
+      logger.error('campaignId, assetId, and requestId are required');
+      return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
+    }
+
+    if (!file) {
+      logger.error('Image file missing');
+      return res.status(400).json({ message: 'Image file is required' });
+    }
+
+    try {
+      const result = await CampaignService.uploadAssetImage(
+        Number(campaignId),
+        Number(assetId),
+        Number(requestId),
+        file
+      );
+
+      res.status(200).json({
+        message: 'Asset image uploaded successfully',
+        ...result,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Internal Server Error';
+      logger.error(message);
+      res.status(500).json({ error: message });
+    }
+  }
+);
 
 export default router;
