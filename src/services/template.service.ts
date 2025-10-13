@@ -150,18 +150,19 @@ class TemplateService {
       const fileBuffer = await fs.readFile(file.path);
       logger.info(`Successfully read file ${file.originalname}`);
       await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+      try {
+        await fs.unlink(file.path);
+        logger.info(`Deleted local template image file: ${file.originalname}`);
+      } catch (unlinkErr) {
+        logger.error(`Attempting to delete local file failed: ${file.path}, error: ${(unlinkErr as Error).message}`);
+      }
+      return { verticalId, templateId, filename: file.originalname, s3Key };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to upload template image';
       return Promise.reject(new Error(message));
     }
-    try {
-      await fs.unlink(file.path);
-      logger.info(`Deleted local template image file: ${file.originalname}`);
-    } catch (unlinkErr) {
-      logger.error(`Attempting to delete local file failed: ${file.path}, error: ${(unlinkErr as Error).message}`);
-    }
-    return { verticalId, templateId, filename: file.originalname, s3Key };
   }
 }
+
 
 export default new TemplateService();
