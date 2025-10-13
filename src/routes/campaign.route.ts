@@ -160,6 +160,36 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
     res.status(500).json({ error: message });
   }
 });
+//----------------------------upload to exportimage s3-----------------------------
+router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const {requestId}=req.body;
+  const files = req.files as Express.Multer.File[];
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+  if(!requestId){
+    logger.error('requestId is required');
+    return res.status(400).json({ message: 'requestId is required' });
+  }
+
+  if (!files || files.length === 0) {
+    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+  }
+
+  try {
+    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
+    res.status(200).json(results);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
+  }
+});
+
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
 router.get('/:campaignId/images/:imageName', async (req, res) => {
