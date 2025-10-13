@@ -241,17 +241,22 @@ public async uploadCSV(
 }
 public async uploadExportedImage(
   campaignId: number,
+  requestId: number,
   file: Express.Multer.File
-): Promise<{ campaignId: number; filename: string; s3Key: string }> {
+): Promise<{ campaignId: number;requestId: number; filename: string; s3Key: string }> {
   if (!campaignId) {
     return Promise.reject(new Error('campaignId is required'));
+  }
+
+  if (!requestId) {
+    return Promise.reject(new Error('requestId is required'));
   }
 
   if (!file) {
     return Promise.reject(new Error('Image file is required'));
   }
 
-  const s3Key = `campaigns/${campaignId}/images/exported/${file.originalname}`;
+  const s3Key = `campaigns/${campaignId}/images/exported/${requestId}/${file.originalname}`;
   const bucket = process.env.IMAGE_BUCKET;
 
   if (!bucket) {
@@ -274,7 +279,7 @@ public async uploadExportedImage(
   } catch (unlinkErr) {
     logger.error(`Failed to delete local file: ${file.path}`);
   }
-  return { campaignId, filename: file.originalname, s3Key };
+  return { campaignId, requestId, filename: file.originalname, s3Key };
 }
 }
 export default new CampaignService(); 
