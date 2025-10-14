@@ -249,16 +249,54 @@ router.post('/image/exported/upload', imageUpload.array('images'), async (req: R
 
 
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
+// router.post(
+//   '/image/asset/upload',
+//   imageUpload.single('image'),
+//   async (req: Request, res: Response) => {
+//     const { campaignId, assetId, requestId } = req.body;
+//     const file = req.file;
+
+//     if (!campaignId || !assetId || !requestId) {
+//       logger.error('campaignId, assetId, and requestId are required');
+//       return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
+//     }
+
+//     if (!file) {
+//       logger.error('Image file missing');
+//       return res.status(400).json({ message: 'Image file is required' });
+//     }
+
+//     try {
+//       const result = await CampaignService.uploadAssetImage(
+//         Number(campaignId),
+//         Number(assetId),
+//         Number(requestId),
+//         file
+//       );
+
+//       res.status(200).json({
+//         message: 'Asset image uploaded successfully',
+//         ...result,
+//       });
+//     } catch (err: unknown) {
+//       const message = err instanceof Error ? err.message : 'Internal Server Error';
+//       logger.error(message);
+//       res.status(500).json({ error: message });
+//     }
+//   }
+// );
+
+
 router.post(
   '/image/asset/upload',
   imageUpload.single('image'),
   async (req: Request, res: Response) => {
-    const { campaignId, assetId, requestId } = req.body;
+    const { campaignId, assetId } = req.body;
     const file = req.file;
 
-    if (!campaignId || !assetId || !requestId) {
-      logger.error('campaignId, assetId, and requestId are required');
-      return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
+    if (!campaignId || !assetId) {
+      logger.error('campaignId and assetId are required');
+      return res.status(400).json({ message: 'campaignId and assetId are required' });
     }
 
     if (!file) {
@@ -270,7 +308,6 @@ router.post(
       const result = await CampaignService.uploadAssetImage(
         Number(campaignId),
         Number(assetId),
-        Number(requestId),
         file
       );
 
@@ -285,7 +322,6 @@ router.post(
     }
   }
 );
-
 
 router.get('/:campaignId/images/exported/:requestId/:imageName', async (req: Request, res: Response) => {
   const { campaignId, requestId, imageName } = req.params;
