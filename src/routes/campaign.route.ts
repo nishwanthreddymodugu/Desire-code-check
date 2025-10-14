@@ -287,53 +287,29 @@ router.post(
 );
 
 router.get('/:campaignId/requests/:requestId/image/:imageName', async (req, res) => {
+  const { campaignId, requestId, imageName } = req.params;
+
   try {
-    const { campaignId, requestId, imageName } = req.params;
-    const cId = Number(campaignId);
-    const rId = Number(requestId);
-
-    if (isNaN(cId) || isNaN(rId) || !imageName) {
-      return res.status(400).json({
-        error: 'campaignId, requestId, and imageName are required and must be valid',
-      });
-    }
-
-    // Call the service method to get the image from S3
-    const { buffer, key } = await CampaignService.getExportedImageByCampaignAndRequest(cId, rId, imageName);
+    const { buffer, key } = await CampaignService.getExportedImageByCampaignAndRequest(
+      Number(campaignId),
+      Number(requestId),
+      imageName
+    );
 
     const ext = path.extname(imageName).toLowerCase();
-
-router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
-  try {
-    const { campaignId, requestId } = req.params;
-    const cId = Number(campaignId);
-    const rId = Number(requestId);
-
-    if (isNaN(cId) || isNaN(rId)) {
-      return res.status(400).json({
-        error: 'campaignId and requestId are required and must be valid numbers',
-      });
-    }
-
-    // Call the service
-    const { buffer, key } = await CampaignService.getAssetImageByCampaignAndRequest(cId, rId);
-    const ext = path.extname(key).toLowerCase();
-
-    let contentType = '';
-    if (ext === '.png') contentType = 'image/png';
-    else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else
-      return res.status(400).json({
-        error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.',
-      });
+    let contentType = 'application/octet-stream';
+    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else if (ext === '.png') contentType = 'image/png';
 
     res.setHeader('Content-Type', contentType);
     res.send(buffer);
-  } catch (error: any) {
-    const message = error.message || 'Failed to retrieve image';
-    const status = /not found/i.test(message) ? 404 : 500;
-    logger.error(message);
-    res.status(status).json({ error: message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to get image';
+    if (message === 'Image not found' || message.includes('No images found')) {
+      res.status(404).json({ message });
+    } else {
+      res.status(500).json({ message });
+    }
   }
 });
 export default router;
