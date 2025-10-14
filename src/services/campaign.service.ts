@@ -335,9 +335,9 @@ class CampaignService {
 }
 
  public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
-  const bucket = process.env.S3_BUCKET_NAME;
+  const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) {
-    throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+    throw new Error('IMAGE_BUCKET is not defined in environment variables');
   }
   try {
     const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
