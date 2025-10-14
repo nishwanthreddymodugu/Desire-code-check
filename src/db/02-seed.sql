@@ -21,7 +21,7 @@ VALUES
 -- Inserting rows into assets
 INSERT INTO "assets" ("assetname", "description", "figmaURL", "figmaId", "verticalId", "templateId", "stylePrompt", "prod_image_width", "prod_image_height")
 VALUES
-  ('Asset 1', 'Description 1', 'https://figma.com/asset1', 'figma01', 1, 1, 'Style A1', 200, 200),
+  ('Asset 1', 'Description 1', 'https://figma.com/asset1', 't85p6LbZ4l0Yx7tcsQBsEi', 1, 1, 'Style A1', 200, 200),
   ('Asset 2', 'Description 2', 'https://figma.com/asset2', 'figma02', 1, 2, 'Style A2', 200, 200),
   ('Asset 3', 'Description 3', 'https://figma.com/asset3', 'figma03', 2, 3, 'Style B1', 200, 200),
   ('Asset 4', 'Description 4', 'https://figma.com/asset4', 'figma04', 2, 4, 'Style B2', 200, 200),
