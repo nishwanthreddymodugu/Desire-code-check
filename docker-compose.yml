@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  localstack:
+    container_name: "desire-localstack"
+    image: localstack/localstack:latest
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - DEBUG=${DEBUG:-0}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOCALSTACK_HOST=localhost:4566
+      - EDGE_PORT=4566
+      # Services to start (comment out services you don't need)
+      - SERVICES=s3,dynamodb,lambda,apigateway,cloudformation,sts,iam,cloudwatch,logs,events,sns,sqs,ssm,secretsmanager,route53,ec2,vpc,rds
+      # Persistence (optional - uncomment to persist data between restarts)
+      # - PERSISTENCE=1
+      # - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./tmp/localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - localstack
+
+networks:
+  localstack:
+    driver: bridge

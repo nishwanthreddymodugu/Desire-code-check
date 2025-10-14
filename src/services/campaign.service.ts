@@ -9,6 +9,7 @@ import figmaService from './figma.service';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
 import fs from 'fs/promises';
 import s3Service from './s3.service';
+//import s3Service from '../services/s3.service';
 import createLogger from '../config/logger';
 import path from 'path';
 
@@ -242,7 +243,7 @@ public async uploadCSV(
 }
 
 public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
-  const bucket = process.env.S3_BUCKET_NAME;
+  const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) {
     throw new Error('S3_BUCKET_NAME is not defined in environment variables');
   }
@@ -353,30 +354,34 @@ public async uploadAssetImage(
   }
 }
 
-public async getAssetImageByCampaignAndRequest(
+public async getAssetImage(
   campaignId: number,
-  requestId: number
+  assetId: number,
+  imageName: string
 ): Promise<{ buffer: Buffer; key: string }> {
   const bucket = process.env.IMAGE_BUCKET;
-  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+  if (!bucket) {
+    throw new Error('IMAGE_BUCKET environment variable is not set');
+  }
 
-  const s3Prefix = `campaigns/${campaignId}/assets/`;
+  // Updated S3 prefix (no requestId)
+  const s3Prefix = `campaigns/${campaignId}/images/${assetId}/`;
 
   try {
+    // Fetch all objects under the asset folder
     const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
 
-    const matched = allObjects.filter((obj: any) =>
-      obj.key.includes(`/requests/${requestId}/`)
-    );
-
-    if (!matched.length) {
-      throw new Error('No image found for the given campaignId and requestId');
+    if (!allObjects || allObjects.length === 0) {
+      throw new Error('No images found for the given campaignId and assetId');
     }
 
-    const imageObject = matched[0];
-    const buffer =
-      (imageObject.body as Buffer) || Buffer.from([]);
+    // Find the specific image by file name
+    const imageObject = allObjects.find((obj: any) => obj.key.endsWith(`/${imageName}`));
+    if (!imageObject) {
+      throw new Error('Image not found');
+    }
 
+    const buffer = (imageObject.body as Buffer) || Buffer.from([]);
     const key = imageObject.key;
 
     return { buffer, key };
@@ -386,5 +391,4 @@ public async getAssetImageByCampaignAndRequest(
   }
 }
 }
-
 export default new CampaignService();

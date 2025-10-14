@@ -12,7 +12,7 @@ const router = Router();
 const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 1 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
 const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
@@ -161,6 +161,36 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
     res.status(500).json({ error: message });
   }
 });
+//----------------------------upload to exportimage s3-----------------------------
+router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const {requestId}=req.body;
+  const files = req.files as Express.Multer.File[];
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+  if(!requestId){
+    logger.error('requestId is required');
+    return res.status(400).json({ message: 'requestId is required' });
+  }
+
+  if (!files || files.length === 0) {
+    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+  }
+
+  try {
+    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
+    res.status(200).json(results);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
+  }
+});
+
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
 router.get('/:campaignId/images/:imageName', async (req, res) => {
@@ -255,7 +285,6 @@ router.post(
     }
   }
 );
-
 router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
   try {
     const { campaignId, requestId } = req.params;
@@ -289,5 +318,31 @@ router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: R
   }
 });
 
+router.get('/:campaignId/images/exported/:requestId/:imageName', async (req: Request, res: Response) => {
+  const { campaignId, requestId, imageName } = req.params;
 
+  try {
+    const { buffer, key } = await CampaignService.getExportedImageByCampaignAndRequest(
+      Number(campaignId),
+      Number(requestId),
+      imageName
+    );
+
+    // Determine Content-Type based on file extension
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = 'application/octet-stream';
+    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else if (ext === '.png') contentType = 'image/png';
+
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to get image';
+    if (message === 'Image not found' || message.includes('No images found')) {
+      res.status(404).json({ message });
+    } else {
+      res.status(500).json({ message });
+    }
+  }
+});
 export default router;
