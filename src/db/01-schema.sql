@@ -77,6 +77,19 @@ CREATE TABLE "campaignassets" (
     PRIMARY KEY ("campaignId", "assetId")
 );
 
+-- Create batch_requests table
+CREATE TABLE IF NOT EXISTS "batch_requests" (
+    "id" SERIAL PRIMARY KEY,
+    "requestname" VARCHAR(255) NOT NULL,
+    "csv_path" VARCHAR(500) NOT NULL,
+    "status" VARCHAR(50) DEFAULT 'pending',
+    "createdBy" VARCHAR(100),
+    "updatedBy" VARCHAR(100),
+    "deleted" BOOLEAN DEFAULT FALSE,
+    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS image_gen_requests (
   id BIGSERIAL PRIMARY KEY,
   prompt TEXT NOT NULL,
