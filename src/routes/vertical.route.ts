@@ -38,4 +38,33 @@ verticalRouter.get("/list", async (_req: Request, res: Response) => {
   }
 });
 
+// Get template images
+verticalRouter.get('/:verticalId/templates/:templateId/images', async (req, res) => {
+  try {
+    const { verticalId, templateId } = req.params;
+    const vId = Number(verticalId);
+    const tId = Number(templateId);
+
+    if (isNaN(vId) || isNaN(tId)) {
+      return res.status(400).json({ error: 'Both verticalId and templateId must be valid numbers' });
+    }
+
+    const verticals = await VerticalService.list();
+    const verticalExists = verticals.some(v => v.verticalId === vId);
+    if (!verticalExists) return res.status(404).json({ error: `Vertical ${vId} not found` });
+
+    const imagesPaths = await VerticalService.getTemplateImages(vId, tId);
+
+    res.status(200).json({
+      verticalId: vId,
+      templateId: tId,
+      images: imagesPaths,
+    });
+  } catch (error: any) {
+    const message = error.message || 'Failed to retrieve template images';
+    const status = /not found|no images/i.test(message) ? 404 : 500;
+    logger.error(message);
+    res.status(status).json({ error: message });
+  }
+});
 export default verticalRouter;

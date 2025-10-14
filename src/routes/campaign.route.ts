@@ -11,6 +11,8 @@ import { getUser } from '../utils/auth';
 // interface AuthRequest extends Request {
 //   user?: IUser;
 // }
+import campaignService from '../services/campaign.service';
+
 const logger = createLogger(module);
 const CampaignRouter = Router();
 
@@ -213,5 +215,59 @@ CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async
     res.status(500).json({ error: message });
   }
 });
+
+/* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
+  try {
+    const { campaignId, imageName } = req.params;
+    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
+
+    const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
+
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = '';
+
+    if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else {
+      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.send(imageBuffer);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+
+/* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
+  try {
+    const { campaignId, imageName } = req.params;
+    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
+
+    const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
+
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = '';
+
+    if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else {
+      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.send(imageBuffer);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
 
 export default CampaignRouter;

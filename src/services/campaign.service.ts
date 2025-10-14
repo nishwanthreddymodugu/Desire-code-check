@@ -185,7 +185,7 @@ class CampaignService {
     });
   }
 
-public getById(campaignId: number): Promise<CampaignGetOut> {
+  public getById(campaignId: number): Promise<CampaignGetOut> {
   return new Promise(async (resolve, reject) => {
     try {
       logger.debug(`Service: Attempting to fetch campaign by ID: ${campaignId}`);
@@ -220,7 +220,7 @@ public getById(campaignId: number): Promise<CampaignGetOut> {
   });
 }
 
-public async uploadImage(
+  public async uploadImage(
   campaignId: number,
   file: Express.Multer.File
 ): Promise<{ campaignId: number; filename: string; s3Key: string }> {
@@ -257,7 +257,7 @@ public async uploadImage(
   }
 }
 
-public async uploadCSV(
+  public async uploadCSV(
   campaignId: number,
   file: Express.Multer.File
 ): Promise<{ campaignId: number; filename: string; s3Key: string }> {
@@ -294,7 +294,7 @@ public async uploadCSV(
   }
 }
 
-public async uploadexportedImage(
+ public async uploadexportedImage(
   campaignId: number,
   requestId: number,
   file: Express.Multer.File
@@ -331,6 +331,23 @@ public async uploadexportedImage(
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to upload image';
     return Promise.reject(new Error(message));
+  }
+}
+
+ public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
+  const bucket = process.env.S3_BUCKET_NAME;
+  if (!bucket) {
+    throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+  }
+  try {
+    const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+    if (!objects || objects.length === 0) {
+      throw new Error('No file found for this prefix');
+    }
+    return objects[0].body;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+    throw new Error(message);
   }
 }
 }
