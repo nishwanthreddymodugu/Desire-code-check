@@ -112,6 +112,7 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
     res.status(status).json({ message: error.message || 'Internal Server Error' });
   }
 });
+
 /* ---------------- IMAGE UPLOAD ROUTE ---------------- */
 router.post('/image/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
   const { campaignId } = req.body;
