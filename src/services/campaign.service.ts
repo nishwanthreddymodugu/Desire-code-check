@@ -6,7 +6,7 @@ import AssetDAO from '../daos/asset.dao';
 import VerticalDAO from '../daos/vertical.dao'
 import { Campaign } from '../models/campaign';
 import { Template } from '../models/template';
-import figmaService from './figma.service';
+//import figmaService from './figma.service';
 import SearchService from './search.service'
 import { CampaignDocument } from '../interfaces/search.interface';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
