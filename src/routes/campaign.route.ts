@@ -243,7 +243,7 @@ CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
 });
 
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
-router.post(
+CampaignRouter.post(
   '/image/asset/upload',
   imageUpload.single('image'),
   async (req: Request, res: Response) => {
