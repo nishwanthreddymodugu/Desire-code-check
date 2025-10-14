@@ -184,27 +184,32 @@ CampaignRouter.post('/csv/upload', csvUpload.array('csv'), async (req: Request, 
   }
 });
 
-/* ---------------- EXPORTED IMAGE UPLOAD ROUTE ---------------- */
-CampaignRouter.post('/image/exported/upload', imageUpload.single('image'), async (req: Request, res: Response) => {
+//----------------------------upload to exportimage s3-----------------------------
+CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
   const { campaignId } = req.body;
-  const file = req.file as Express.Multer.File;
+  const {requestId}=req.body;
+  const files = req.files as Express.Multer.File[];
 
   if (!campaignId) {
     logger.error('campaignId is required');
     return res.status(400).json({ message: 'campaignId is required' });
   }
+  if(!requestId){
+    logger.error('requestId is required');
+    return res.status(400).json({ message: 'requestId is required' });
+  }
 
-  if (!file) {
-    logger.error('Valid image file (.png, .jpg, .jpeg) is required');
-    return res.status(400).json({ message: 'Valid image file (.png, .jpg, .jpeg) is required' });
+  if (!files || files.length === 0) {
+    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
   }
 
   try {
-    const result = await CampaignService.uploadExportedImage(Number(campaignId), file);
-    res.status(200).json(result);
+    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
+    res.status(200).json(results);
   } catch (err: unknown) {
-    logger.error(err); 
     const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
     res.status(500).json({ error: message });
   }
 });
