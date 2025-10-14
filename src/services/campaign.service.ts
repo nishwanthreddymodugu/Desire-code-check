@@ -404,25 +404,29 @@ public async uploadAssetImage(
   }
 }
 
-
 public async getExportedImageByCampaignAndRequest(
+public async getAssetImage(
   campaignId: number,
-  requestId: number,
-  imageName: string 
+  assetId: number,
+  imageName: string
 ): Promise<{ buffer: Buffer; key: string }> {
   const bucket = process.env.IMAGE_BUCKET;
-  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+  if (!bucket) {
+    throw new Error('IMAGE_BUCKET environment variable is not set');
+  }
 
-  const s3Prefix = `campaigns/${campaignId}/images/exported/${requestId}/`;
+  // Updated S3 prefix (no requestId)
+  const s3Prefix = `campaigns/${campaignId}/images/${assetId}/`;
 
   try {
+    // Fetch all objects under the asset folder
     const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
 
     if (!allObjects || allObjects.length === 0) {
-      throw new Error('No images found for the given campaignId and requestId');
+      throw new Error('No images found for the given campaignId and assetId');
     }
 
-    // Find the exact image requested
+    // Find the specific image by file name
     const imageObject = allObjects.find((obj: any) => obj.key.endsWith(`/${imageName}`));
     if (!imageObject) {
       throw new Error('Image not found');

@@ -12,7 +12,7 @@ const router = Router();
 const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 1 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
 const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
@@ -322,7 +322,37 @@ router.post(
     }
   }
 );
+router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
+  try {
+    const { campaignId, requestId } = req.params;
+    const cId = Number(campaignId);
+    const rId = Number(requestId);
+    if (isNaN(cId) || isNaN(rId)) {
+      return res.status(400).json({
+        error: 'campaignId and requestId are required and must be valid numbers',
+      });
+    }
 
+    // Call the service
+    const { buffer, key } = await CampaignService.getAssetImageByCampaignAndRequest(cId, rId);
+    const ext = path.extname(key).toLowerCase();
+    let contentType = '';
+    if (ext === '.png') contentType = 'image/png';
+    else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else
+      return res.status(400).json({
+        error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.',
+      });
+
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (error: any) {
+    const message = error.message || 'Failed to retrieve image';
+    const status = /not found/i.test(message) ? 404 : 500;
+    logger.error(message);
+    res.status(status).json({ error: message });
+  }
+});
 router.get('/:campaignId/images/exported/:requestId/:imageName', async (req: Request, res: Response) => {
   const { campaignId, requestId, imageName } = req.params;
 
