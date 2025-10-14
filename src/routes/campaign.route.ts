@@ -286,6 +286,23 @@ router.post(
   }
 );
 
+router.get('/:campaignId/requests/:requestId/image/:imageName', async (req, res) => {
+  try {
+    const { campaignId, requestId, imageName } = req.params;
+    const cId = Number(campaignId);
+    const rId = Number(requestId);
+
+    if (isNaN(cId) || isNaN(rId) || !imageName) {
+      return res.status(400).json({
+        error: 'campaignId, requestId, and imageName are required and must be valid',
+      });
+    }
+
+    // Call the service method to get the image from S3
+    const { buffer, key } = await CampaignService.getExportedImageByCampaignAndRequest(cId, rId, imageName);
+
+    const ext = path.extname(imageName).toLowerCase();
+
 router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
   try {
     const { campaignId, requestId } = req.params;
@@ -301,6 +318,7 @@ router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: R
     // Call the service
     const { buffer, key } = await CampaignService.getAssetImageByCampaignAndRequest(cId, rId);
     const ext = path.extname(key).toLowerCase();
+
     let contentType = '';
     if (ext === '.png') contentType = 'image/png';
     else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
@@ -318,6 +336,4 @@ router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: R
     res.status(status).json({ error: message });
   }
 });
-
-
 export default router;
