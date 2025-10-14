@@ -9,6 +9,7 @@ import campaignService from '../services/campaign.service';
 
 const logger = createLogger(module);
 const router = Router();
+const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
 const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
@@ -217,6 +218,36 @@ router.get('/:campaignId/images/:imageName', async (req, res) => {
   }
 });
 
+router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+  const { campaignId } = req.body;
+  const {requestId}=req.body;
+  const files = req.files as Express.Multer.File[];
+
+  if (!campaignId) {
+    logger.error('campaignId is required');
+    return res.status(400).json({ message: 'campaignId is required' });
+  }
+  if(!requestId){
+    logger.error('requestId is required');
+    return res.status(400).json({ message: 'requestId is required' });
+  }
+
+  if (!files || files.length === 0) {
+    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+  }
+
+  try {
+    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
+    res.status(200).json(results);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    logger.error(message);
+    res.status(500).json({ error: message });
+  }
+});
+
+
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
 router.post(
   '/image/asset/upload',
@@ -254,5 +285,39 @@ router.post(
     }
   }
 );
+
+router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
+  try {
+    const { campaignId, requestId } = req.params;
+    const cId = Number(campaignId);
+    const rId = Number(requestId);
+
+    if (isNaN(cId) || isNaN(rId)) {
+      return res.status(400).json({
+        error: 'campaignId and requestId are required and must be valid numbers',
+      });
+    }
+
+    // Call the service
+    const { buffer, key } = await CampaignService.getAssetImageByCampaignAndRequest(cId, rId);
+    const ext = path.extname(key).toLowerCase();
+    let contentType = '';
+    if (ext === '.png') contentType = 'image/png';
+    else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else
+      return res.status(400).json({
+        error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.',
+      });
+
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (error: any) {
+    const message = error.message || 'Failed to retrieve image';
+    const status = /not found/i.test(message) ? 404 : 500;
+    logger.error(message);
+    res.status(status).json({ error: message });
+  }
+});
+
 
 export default router;

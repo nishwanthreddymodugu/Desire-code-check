@@ -10,6 +10,7 @@ import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '
 import fs from 'fs/promises';
 import s3Service from './s3.service';
 import createLogger from '../config/logger';
+import path from 'path';
 
 const logger = createLogger(module);
 
@@ -350,5 +351,39 @@ public async uploadAssetImage(
     return Promise.reject(new Error(message));
   }
 }
+
+public async getAssetImageByCampaignAndRequest(
+  campaignId: number,
+  requestId: number
+): Promise<{ buffer: Buffer; key: string }> {
+  const bucket = process.env.IMAGE_BUCKET;
+  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+
+  const s3Prefix = `campaigns/${campaignId}/assets/`;
+
+  try {
+    const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+
+    const matched = allObjects.filter((obj: any) =>
+      obj.key.includes(`/requests/${requestId}/`)
+    );
+
+    if (!matched.length) {
+      throw new Error('No image found for the given campaignId and requestId');
+    }
+
+    const imageObject = matched[0];
+    const buffer =
+      (imageObject.body as Buffer) || Buffer.from([]);
+
+    const key = imageObject.key;
+
+    return { buffer, key };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+    throw new Error(message);
+  }
 }
-export default new CampaignService(); 
+}
+
+export default new CampaignService();
