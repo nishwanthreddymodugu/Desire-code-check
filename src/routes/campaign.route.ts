@@ -286,7 +286,8 @@ router.post(
   }
 );
 
-router.get('/:campaignId/requests/:requestId/image/:imageName', async (req, res) => {
+
+router.get('/:campaignId/images/exported/:requestId/:imageName', async (req: Request, res: Response) => {
   const { campaignId, requestId, imageName } = req.params;
 
   try {
@@ -296,6 +297,7 @@ router.get('/:campaignId/requests/:requestId/image/:imageName', async (req, res)
       imageName
     );
 
+    // Determine Content-Type based on file extension
     const ext = path.extname(imageName).toLowerCase();
     let contentType = 'application/octet-stream';
     if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';

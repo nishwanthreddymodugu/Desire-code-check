@@ -386,6 +386,4 @@ public async getExportedImageByCampaignAndRequest(
   }
 }
 }
-
-
 export default new CampaignService();
