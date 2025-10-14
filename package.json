@@ -20,6 +20,7 @@
     "@aws-sdk/client-sqs": "^3.620.0",
     "@elastic/elasticsearch": "^8.19.1",
     "aws-sdk": "^2.1692.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

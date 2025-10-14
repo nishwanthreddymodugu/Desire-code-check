@@ -12,6 +12,7 @@ import { CampaignDocument } from '../interfaces/search.interface';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
 import fs from 'fs/promises';
 import s3Service from './s3.service';
+import FigmaClient from '../clients/figma.client';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
@@ -70,9 +71,10 @@ class CampaignService {
           createdBy: campaignInput.createdByUserID,
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
-        const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
+        // const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
+        // const clonedFigmaIds = await Promise.all(clonePromises);
+        const clonePromises = originalAssets.map(asset => FigmaClient.cloneFile(asset.figmaId!));
         const clonedFigmaIds = await Promise.all(clonePromises);
-
         const campaignAssetsToCreate = originalAssets.map((asset, index) => ({
           campaignId: newCampaign.campaignId,
           assetId: asset.assetId,
