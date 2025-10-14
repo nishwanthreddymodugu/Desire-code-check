@@ -9,6 +9,7 @@ import figmaService from './figma.service';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
 import fs from 'fs/promises';
 import s3Service from './s3.service';
+//import s3Service from '../services/s3.service';
 import createLogger from '../config/logger';
 import path from 'path';
 
@@ -352,30 +353,30 @@ public async uploadAssetImage(
   }
 }
 
-public async getAssetImageByCampaignAndRequest(
+public async getExportedImageByCampaignAndRequest(
   campaignId: number,
-  requestId: number
+  requestId: number,
+  imageName: string 
 ): Promise<{ buffer: Buffer; key: string }> {
   const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
-  const s3Prefix = `campaigns/${campaignId}/assets/`;
+  const s3Prefix = `campaigns/${campaignId}/images/exported/${requestId}/`;
 
   try {
     const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
 
-    const matched = allObjects.filter((obj: any) =>
-      obj.key.includes(`/requests/${requestId}/`)
-    );
-
-    if (!matched.length) {
-      throw new Error('No image found for the given campaignId and requestId');
+    if (!allObjects || allObjects.length === 0) {
+      throw new Error('No images found for the given campaignId and requestId');
     }
 
-    const imageObject = matched[0];
-    const buffer =
-      (imageObject.body as Buffer) || Buffer.from([]);
+    // Find the exact image requested
+    const imageObject = allObjects.find((obj: any) => obj.key.endsWith(`/${imageName}`));
+    if (!imageObject) {
+      throw new Error('Image not found');
+    }
 
+    const buffer = (imageObject.body as Buffer) || Buffer.from([]);
     const key = imageObject.key;
 
     return { buffer, key };
@@ -385,5 +386,4 @@ public async getAssetImageByCampaignAndRequest(
   }
 }
 }
-
 export default new CampaignService();
