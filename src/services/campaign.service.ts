@@ -354,92 +354,81 @@ public async uploadexportedImage(
 // }
 
 public async uploadAssetImage(
-  campaignId: number,
-  assetId: number,
-  file: Express.Multer.File
-): Promise<{ campaignId: number; assetId: number; s3Key: string }> {
-  // Validation
-  if (!campaignId || !assetId) {
-    return Promise.reject(new Error('campaignId and assetId are required'));
-  }
+    campaignId: number,
+    assetId: number,
+    file: Express.Multer.File
+  ): Promise<{ campaignId: number; assetId: number; s3Key: string }> {
+    if (!campaignId || !assetId) {
+      return Promise.reject(new Error('campaignId and assetId are required'));
+    }
 
-  if (!file) {
-    return Promise.reject(new Error('Image file is required'));
-  }
+    if (!file) {
+      return Promise.reject(new Error('Image file is required'));
+    }
 
-  const bucket = process.env.IMAGE_BUCKET;
-  if (!bucket) {
-    logger.error('IMAGE_BUCKET environment variable is not set');
-    return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
-  }
+    const bucket = process.env.IMAGE_BUCKET;
+    if (!bucket) {
+      logger.error('IMAGE_BUCKET environment variable is not set');
+      return Promise.reject(new Error('IMAGE_BUCKET environment variable is not set'));
+    }
 
-  // Updated S3 path structure
-  const s3Key = `campaigns/${campaignId}/images/${assetId}/${file.originalname}`;
+    const s3Key = `campaigns/${campaignId}/images/${assetId}/${file.originalname}`;
 
-  try {
-    // Read file from local path
-    const fileBuffer = await fs.readFile(file.path);
-    logger.info(
-      `Uploading asset image: campaignId=${campaignId}, assetId=${assetId}, file=${file.originalname}`
-    );
-
-    // Upload to S3
-    await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-
-    // Delete local temp file after upload
     try {
-      await fs.unlink(file.path);
-      logger.info(`Deleted local file: ${file.originalname}`);
-    } catch (unlinkErr) {
-      logger.warn(`Failed to delete temp file ${file.path}: ${(unlinkErr as Error).message}`);
+      const fileBuffer = await fs.readFile(file.path);
+      logger.info(
+        `Uploading asset image: campaignId=${campaignId}, assetId=${assetId}, file=${file.originalname}`
+      );
+
+      await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
+
+      try {
+        await fs.unlink(file.path);
+        logger.info(`Deleted local file: ${file.originalname}`);
+      } catch (unlinkErr) {
+        logger.warn(`Failed to delete temp file ${file.path}: ${(unlinkErr as Error).message}`);
+      }
+
+      logger.info(`Image uploaded successfully for campaign ${campaignId}, asset ${assetId}`);
+      return { campaignId, assetId, s3Key };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to upload asset image';
+      logger.error(`Error uploading asset image: ${message}`);
+      return Promise.reject(new Error(message));
     }
+  }
 
-    logger.info(`Image uploaded successfully for campaign ${campaignId}, asset ${assetId}`);
+  // Get asset image
+  public async getAssetImage(
+    campaignId: number,
+    assetId: number,
+    imageName: string
+  ): Promise<{ buffer: Buffer; key: string }> {
+    const bucket = process.env.IMAGE_BUCKET;
+    if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
-    return { campaignId, assetId, s3Key };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to upload asset image';
-    logger.error(`Error uploading asset image: ${message}`);
-    return Promise.reject(new Error(message));
+    const s3Prefix = `campaigns/${campaignId}/images/${assetId}/`;
+
+    try {
+      const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+
+      if (!allObjects || allObjects.length === 0) {
+        throw new Error('No images found for the given campaignId and assetId');
+      }
+
+      const imageObject = allObjects.find((obj: any) => obj.key.endsWith(`/${imageName}`));
+      if (!imageObject) throw new Error('Image not found');
+
+      const buffer = (imageObject.body as Buffer) || Buffer.from([]);
+      const key = imageObject.key;
+      return { buffer, key };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+      throw new Error(message);
+    }
   }
 }
 
-public async getExportedImageByCampaignAndRequest(
-public async getAssetImage(
-  campaignId: number,
-  assetId: number,
-  imageName: string
-): Promise<{ buffer: Buffer; key: string }> {
-  const bucket = process.env.IMAGE_BUCKET;
-  if (!bucket) {
-    throw new Error('IMAGE_BUCKET environment variable is not set');
-  }
-
-  // Updated S3 prefix (no requestId)
-  const s3Prefix = `campaigns/${campaignId}/images/${assetId}/`;
-
-  try {
-    // Fetch all objects under the asset folder
-    const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
-
-    if (!allObjects || allObjects.length === 0) {
-      throw new Error('No images found for the given campaignId and assetId');
-    }
-
-    // Find the specific image by file name
-    const imageObject = allObjects.find((obj: any) => obj.key.endsWith(`/${imageName}`));
-    if (!imageObject) {
-      throw new Error('Image not found');
-    }
-
-    const buffer = (imageObject.body as Buffer) || Buffer.from([]);
-    const key = imageObject.key;
-
-    return { buffer, key };
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to retrieve image';
-    throw new Error(message);
-  }
-}
-}
 export default new CampaignService();
+
+

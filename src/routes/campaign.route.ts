@@ -322,27 +322,27 @@ router.post(
     }
   }
 );
-router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: Response) => {
+
+// Get asset image
+router.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, res: Response) => {
   try {
-    const { campaignId, requestId } = req.params;
+    const { campaignId, assetId, imageName } = req.params;
     const cId = Number(campaignId);
-    const rId = Number(requestId);
-    if (isNaN(cId) || isNaN(rId)) {
+    const aId = Number(assetId);
+
+    if (isNaN(cId) || isNaN(aId)) {
       return res.status(400).json({
-        error: 'campaignId and requestId are required and must be valid numbers',
+        error: 'campaignId and assetId are required and must be valid numbers',
       });
     }
 
-    // Call the service
-    const { buffer, key } = await CampaignService.getAssetImageByCampaignAndRequest(cId, rId);
-    const ext = path.extname(key).toLowerCase();
-    let contentType = '';
-    if (ext === '.png') contentType = 'image/png';
-    else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else
-      return res.status(400).json({
-        error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.',
-      });
+    const { buffer, key } = await CampaignService.getAssetImage(cId, aId, imageName);
+
+    // Set content type
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = 'application/octet-stream';
+    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else if (ext === '.png') contentType = 'image/png';
 
     res.setHeader('Content-Type', contentType);
     res.send(buffer);
@@ -353,31 +353,5 @@ router.get('/:campaignId/requests/:requestId/image', async (req: Request, res: R
     res.status(status).json({ error: message });
   }
 });
-router.get('/:campaignId/images/exported/:requestId/:imageName', async (req: Request, res: Response) => {
-  const { campaignId, requestId, imageName } = req.params;
 
-  try {
-    const { buffer, key } = await CampaignService.getExportedImageByCampaignAndRequest(
-      Number(campaignId),
-      Number(requestId),
-      imageName
-    );
-
-    // Determine Content-Type based on file extension
-    const ext = path.extname(imageName).toLowerCase();
-    let contentType = 'application/octet-stream';
-    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else if (ext === '.png') contentType = 'image/png';
-
-    res.setHeader('Content-Type', contentType);
-    res.send(buffer);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Failed to get image';
-    if (message === 'Image not found' || message.includes('No images found')) {
-      res.status(404).json({ message });
-    } else {
-      res.status(500).json({ message });
-    }
-  }
-});
 export default router;
