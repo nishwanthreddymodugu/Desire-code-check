@@ -21,6 +21,7 @@ CREATE TABLE "users" (
 );
 
 DROP TABLE IF EXISTS "image_gen_requests" CASCADE;
+DROP TABLE IF EXISTS "image_gen_requests" CASCADE;
 -- Create verticals table
 CREATE TABLE "verticals" (
     "verticalId" SERIAL PRIMARY KEY,
@@ -91,6 +92,37 @@ CREATE TABLE "campaignassets" (
     "createdAt" TIMESTAMPTZ DEFAULT NOW(),
     "updatedAt" TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY ("campaignId", "assetId")
+);
+
+CREATE TABLE IF NOT EXISTS image_gen_requests (
+  id BIGSERIAL PRIMARY KEY,
+  prompt TEXT NOT NULL,
+  campaignId INTEGER NOT NULL REFERENCES "campaigns"("campaignId") ON DELETE CASCADE,
+  verticalId INTEGER NOT NULL REFERENCES "verticals"("verticalId") ON DELETE CASCADE,
+  templateId INTEGER NOT NULL REFERENCES "templates"("templateId") ON DELETE CASCADE,
+  use_ref_img BOOLEAN NOT NULL DEFAULT FALSE,
+  use_template_prompt BOOLEAN NOT NULL DEFAULT FALSE,
+  use_user_given_imgs BOOLEAN NOT NULL DEFAULT FALSE,
+  user_given_imgs TEXT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'requested',
+  createdBy VARCHAR(100) NULL,
+  updatedBy VARCHAR(100) NULL,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create batch_requests table
+CREATE TABLE IF NOT EXISTS "batch_requests" (
+    "id" SERIAL PRIMARY KEY,
+    "requestname" VARCHAR(255) NOT NULL,
+    "csv_path" VARCHAR(500) NOT NULL,
+    "status" VARCHAR(50) DEFAULT 'pending',
+    "createdBy" VARCHAR(100),
+    "updatedBy" VARCHAR(100),
+    "deleted" BOOLEAN DEFAULT FALSE,
+    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS image_gen_requests (
