@@ -161,36 +161,6 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
     res.status(500).json({ error: message });
   }
 });
-//----------------------------upload to exportimage s3-----------------------------
-router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
-  const { campaignId } = req.body;
-  const {requestId}=req.body;
-  const files = req.files as Express.Multer.File[];
-
-  if (!campaignId) {
-    logger.error('campaignId is required');
-    return res.status(400).json({ message: 'campaignId is required' });
-  }
-  if(!requestId){
-    logger.error('requestId is required');
-    return res.status(400).json({ message: 'requestId is required' });
-  }
-
-  if (!files || files.length === 0) {
-    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
-    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
-  }
-
-  try {
-    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
-    res.status(200).json(results);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Internal Server Error';
-    logger.error(message);
-    res.status(500).json({ error: message });
-  }
-});
-
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
 router.get('/:campaignId/images/:imageName', async (req, res) => {
@@ -218,34 +188,48 @@ router.get('/:campaignId/images/:imageName', async (req, res) => {
   }
 });
 
-router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
-  const { campaignId } = req.body;
-  const {requestId}=req.body;
-  const files = req.files as Express.Multer.File[];
+router.post(
+  '/image/exported/upload',
+  imageUpload.array('images'), // <- must match files[] in form-data
+  async (req: Request, res: Response) => {
+    const { campaignId, requestId } = req.body;
+    const files = req.files as Express.Multer.File[]; // array
 
-  if (!campaignId) {
-    logger.error('campaignId is required');
-    return res.status(400).json({ message: 'campaignId is required' });
+    try {
+      const results = await CampaignService.uploadExportedImages(
+        Number(campaignId),
+        Number(requestId),
+        files
+      );
+      res.status(200).json(results);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Internal Server Error';
+      logger.error(message);
+      res.status(500).json({ error: message });
+    }
   }
-  if(!requestId){
-    logger.error('requestId is required');
-    return res.status(400).json({ message: 'requestId is required' });
-  }
+);
 
-  if (!files || files.length === 0) {
-    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
-    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
-  }
+router.get(
+  '/:campaignId/images/exported/:requestId.png',
+  async (req: Request, res: Response) => {
+    try {
+      const { campaignId, requestId } = req.params;
 
-  try {
-    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
-    res.status(200).json(results);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Internal Server Error';
-    logger.error(message);
-    res.status(500).json({ error: message });
+      const { buffer, contentType } = await CampaignService.getExportedImage(
+        Number(campaignId),
+        Number(requestId)
+      );
+
+      res.setHeader('Content-Type', contentType);
+      res.send(buffer);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+      logger.error(message);
+      res.status(404).json({ error: message });
+    }
   }
-});
+);
 
 
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
@@ -287,6 +271,7 @@ router.post('/image/exported/upload', imageUpload.array('images'), async (req: R
 // );
 
 
+// Upload Asset Image
 router.post(
   '/image/asset/upload',
   imageUpload.single('image'),
@@ -295,12 +280,10 @@ router.post(
     const file = req.file;
 
     if (!campaignId || !assetId) {
-      logger.error('campaignId and assetId are required');
       return res.status(400).json({ message: 'campaignId and assetId are required' });
     }
 
     if (!file) {
-      logger.error('Image file missing');
       return res.status(400).json({ message: 'Image file is required' });
     }
 
@@ -311,47 +294,35 @@ router.post(
         file
       );
 
-      res.status(200).json({
-        message: 'Asset image uploaded successfully',
-        ...result,
-      });
+      const status =
+        result.message === 'Image already exists for this assetId' ? 200 : 201;
+
+      res.status(status).json(result);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Internal Server Error';
-      logger.error(message);
       res.status(500).json({ error: message });
     }
   }
 );
-
-// Get asset image
-router.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, res: Response) => {
+//To get image by assetId
+router.get('/:campaignId/asset/:assetId', async (req: Request, res: Response) => {
   try {
-    const { campaignId, assetId, imageName } = req.params;
+    const { campaignId, assetId } = req.params;
     const cId = Number(campaignId);
     const aId = Number(assetId);
 
     if (isNaN(cId) || isNaN(aId)) {
-      return res.status(400).json({
-        error: 'campaignId and assetId are required and must be valid numbers',
-      });
+      return res.status(400).json({ error: 'campaignId and assetId must be valid numbers' });
     }
 
-    const { buffer, key } = await CampaignService.getAssetImage(cId, aId, imageName);
-
-    // Set content type
-    const ext = path.extname(imageName).toLowerCase();
-    let contentType = 'application/octet-stream';
-    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else if (ext === '.png') contentType = 'image/png';
+    const { buffer, contentType } = await CampaignService.getAssetImage(cId, aId);
 
     res.setHeader('Content-Type', contentType);
     res.send(buffer);
   } catch (error: any) {
     const message = error.message || 'Failed to retrieve image';
     const status = /not found/i.test(message) ? 404 : 500;
-    logger.error(message);
     res.status(status).json({ error: message });
   }
 });
-
 export default router;
