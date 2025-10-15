@@ -66,7 +66,7 @@ class VerticalService {
   }
 
   public async getTemplateImages(verticalId: number, templateId: number): Promise<string[]> {
-    const bucket = process.env.S3_BUCKET_NAME;
+    const bucket = process.env.IMAGE_BUCKET;
     if (!bucket) {
       throw new Error('S3_BUCKET_NAME is not defined in environment variables');
     }
@@ -90,7 +90,7 @@ class VerticalService {
   }
 // To get single image
   public async getTemplateImage(verticalId: number, templateId: number, imageName: string): Promise<Buffer> {
-  const bucket = process.env.S3_BUCKET_NAME;
+  const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) {
     throw new Error('S3_BUCKET_NAME is not defined in environment variables');
   }

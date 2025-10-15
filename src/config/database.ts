@@ -6,6 +6,7 @@ import { Asset } from '../models/asset';
 import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
 import createLogger from '../config/logger';
+import { ImageGenRequest } from '../models/image_gen';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ if (!dbUrl) {
 const sequelizeOptions: SequelizeOptions = {
     dialect: 'postgres',
     logging: false,
-    models: [Vertical, Template, Asset, Campaign, CampaignAsset],
+    models: [Vertical, Template, Asset, Campaign, CampaignAsset,ImageGenRequest],
     // dialectOptions: {
     //     ssl: {
     //         require: true,

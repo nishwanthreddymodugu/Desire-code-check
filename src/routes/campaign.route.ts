@@ -9,9 +9,10 @@ import campaignService from '../services/campaign.service';
 
 const logger = createLogger(module);
 const router = Router();
+const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 1 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
 const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
@@ -187,36 +188,20 @@ router.get('/:campaignId/images/:imageName', async (req, res) => {
   }
 });
 
-/* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
 router.post(
-  '/image/asset/upload',
-  imageUpload.single('image'),
+  '/image/exported/upload',
+  imageUpload.array('images'), // <- must match files[] in form-data
   async (req: Request, res: Response) => {
-    const { campaignId, assetId, requestId } = req.body;
-    const file = req.file;
-
-    if (!campaignId || !assetId || !requestId) {
-      logger.error('campaignId, assetId, and requestId are required');
-      return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
-    }
-
-    if (!file) {
-      logger.error('Image file missing');
-      return res.status(400).json({ message: 'Image file is required' });
-    }
+    const { campaignId, requestId } = req.body;
+    const files = req.files as Express.Multer.File[]; // array
 
     try {
-      const result = await CampaignService.uploadAssetImage(
+      const results = await CampaignService.uploadExportedImages(
         Number(campaignId),
-        Number(assetId),
         Number(requestId),
-        file
+        files
       );
-
-      res.status(200).json({
-        message: 'Asset image uploaded successfully',
-        ...result,
-      });
+      res.status(200).json(results);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Internal Server Error';
       logger.error(message);
@@ -225,4 +210,119 @@ router.post(
   }
 );
 
+router.get(
+  '/:campaignId/images/exported/:requestId',
+  async (req: Request, res: Response) => {
+    try {
+      const { campaignId, requestId } = req.params;
+
+      const { buffer, contentType } = await CampaignService.getExportedImage(
+        Number(campaignId),
+        Number(requestId)
+      );
+
+      res.setHeader('Content-Type', contentType);
+      res.send(buffer);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+      logger.error(message);
+      res.status(404).json({ error: message });
+    }
+  }
+);
+
+
+/* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
+// router.post(
+//   '/image/asset/upload',
+//   imageUpload.single('image'),
+//   async (req: Request, res: Response) => {
+//     const { campaignId, assetId, requestId } = req.body;
+//     const file = req.file;
+
+//     if (!campaignId || !assetId || !requestId) {
+//       logger.error('campaignId, assetId, and requestId are required');
+//       return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
+//     }
+
+//     if (!file) {
+//       logger.error('Image file missing');
+//       return res.status(400).json({ message: 'Image file is required' });
+//     }
+
+//     try {
+//       const result = await CampaignService.uploadAssetImage(
+//         Number(campaignId),
+//         Number(assetId),
+//         Number(requestId),
+//         file
+//       );
+
+//       res.status(200).json({
+//         message: 'Asset image uploaded successfully',
+//         ...result,
+//       });
+//     } catch (err: unknown) {
+//       const message = err instanceof Error ? err.message : 'Internal Server Error';
+//       logger.error(message);
+//       res.status(500).json({ error: message });
+//     }
+//   }
+// );
+
+
+// Upload Asset Image
+router.post(
+  '/image/asset/upload',
+  imageUpload.single('image'),
+  async (req: Request, res: Response) => {
+    const { campaignId, assetId } = req.body;
+    const file = req.file;
+
+    if (!campaignId || !assetId) {
+      return res.status(400).json({ message: 'campaignId and assetId are required' });
+    }
+
+    if (!file) {
+      return res.status(400).json({ message: 'Image file is required' });
+    }
+
+    try {
+      const result = await CampaignService.uploadAssetImage(
+        Number(campaignId),
+        Number(assetId),
+        file
+      );
+
+      const status =
+        result.message === 'Image already exists for this assetId' ? 200 : 201;
+
+      res.status(status).json(result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Internal Server Error';
+      res.status(500).json({ error: message });
+    }
+  }
+);
+//To get image by assetId
+router.get('/:campaignId/asset/:assetId', async (req: Request, res: Response) => {
+  try {
+    const { campaignId, assetId } = req.params;
+    const cId = Number(campaignId);
+    const aId = Number(assetId);
+
+    if (isNaN(cId) || isNaN(aId)) {
+      return res.status(400).json({ error: 'campaignId and assetId must be valid numbers' });
+    }
+
+    const { buffer, contentType } = await CampaignService.getAssetImage(cId, aId);
+
+    res.setHeader('Content-Type', contentType);
+    res.send(buffer);
+  } catch (error: any) {
+    const message = error.message || 'Failed to retrieve image';
+    const status = /not found/i.test(message) ? 404 : 500;
+    res.status(status).json({ error: message });
+  }
+});
 export default router;
