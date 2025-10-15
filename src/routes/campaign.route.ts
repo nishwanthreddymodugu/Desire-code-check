@@ -244,74 +244,7 @@ CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
   }
 });
 
-// CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
-//   const { campaignId } = req.body;
-//   const {requestId}=req.body;
-//   const files = req.files as Express.Multer.File[];
-
-//   if (!campaignId) {
-//     logger.error('campaignId is required');
-//     return res.status(400).json({ message: 'campaignId is required' });
-//   }
-//   if(!requestId){
-//     logger.error('requestId is required');
-//     return res.status(400).json({ message: 'requestId is required' });
-//   }
-
-//   if (!files || files.length === 0) {
-//     logger.error('Valid image files (.png, .jpg, .jpeg) are required');
-//     return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
-//   }
-
-//   try {
-//     const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
-//     res.status(200).json(results);
-//   } catch (err: unknown) {
-//     const message = err instanceof Error ? err.message : 'Internal Server Error';
-//     logger.error(message);
-//     res.status(500).json({ error: message });
-//   }
-// });
-
-
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
-// router.post(
-//   '/image/asset/upload',
-//   imageUpload.single('image'),
-//   async (req: Request, res: Response) => {
-//     const { campaignId, assetId, requestId } = req.body;
-//     const file = req.file;
-
-//     if (!campaignId || !assetId || !requestId) {
-//       logger.error('campaignId, assetId, and requestId are required');
-//       return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
-//     }
-
-//     if (!file) {
-//       logger.error('Image file missing');
-//       return res.status(400).json({ message: 'Image file is required' });
-//     }
-
-//     try {
-//       const result = await CampaignService.uploadAssetImage(
-//         Number(campaignId),
-//         Number(assetId),
-//         Number(requestId),
-//         file
-//       );
-
-//       res.status(200).json({
-//         message: 'Asset image uploaded successfully',
-//         ...result,
-//       });
-//     } catch (err: unknown) {
-//       const message = err instanceof Error ? err.message : 'Internal Server Error';
-//       logger.error(message);
-//       res.status(500).json({ error: message });
-//     }
-//   }
-// );
-
 
 CampaignRouter.post(
   '/image/asset/upload',
