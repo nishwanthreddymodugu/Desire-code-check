@@ -211,7 +211,7 @@ router.post(
 );
 
 router.get(
-  '/:campaignId/images/exported/:requestId.png',
+  '/:campaignId/images/exported/:requestId',
   async (req: Request, res: Response) => {
     try {
       const { campaignId, requestId } = req.params;
