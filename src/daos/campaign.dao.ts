@@ -3,6 +3,8 @@ import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
 import { Asset } from '../models/asset';
 import createLogger from '../config/logger';
+import { Vertical } from '../models/vertical';
+import { Template } from '../models/template';
 const logger = createLogger(module);
 
 class CampaignDAO {
@@ -29,7 +31,7 @@ class CampaignDAO {
     
     public async findById(id: number): Promise<Campaign | null> {
         try {
-            const campaign = await Campaign.findByPk(id, { include: [Asset] });
+            const campaign = await Campaign.findByPk(id, { include: [Asset, Vertical, Template] });
             return campaign;
         } catch (error) {
             logger.error(`${id}: ${(error as Error).message}`);
@@ -37,6 +39,11 @@ class CampaignDAO {
         }
     }
 
+    // public async findByName(name: string): Promise<Campaign | null> {
+    //     return Campaign.findOne({ where: { campaignName: name } });
+    // }
+
+    
     public async list(options: FindOptions): Promise<Campaign[]> {
         try {
             const campaigns = await Campaign.findAll(options);
@@ -45,6 +52,17 @@ class CampaignDAO {
             logger.error(`${(error as Error).message}`);
             throw error;
         }
+    }
+    /**
+     * Finds all campaigns within a date range, eagerly loading related data for indexing.
+     * @param options The Sequelize query options, including the date range.
+     */
+    public async findAllForIndexing(options: FindOptions): Promise<Campaign[]> {
+        // We 'include' the related models to fetch their names in a single, efficient query.
+        return Campaign.findAll({
+            ...options,
+            include: [Vertical, Template, Asset]
+        });
     }
 }
 

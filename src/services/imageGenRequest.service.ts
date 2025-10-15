@@ -3,7 +3,10 @@ import sqsService from './sqs.service';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
-const QUEUE_NAME = 'desire-image-request-queue';
+const QUEUE_NAME = process.env.IMAGE_GEN_QUEUE;
+if (!QUEUE_NAME) {
+  throw new Error('Environment variable IMAGE_GEN_QUEUE is not set.');
+}
 
 type GenerateInput = {
   prompt: string;
@@ -53,7 +56,7 @@ class ImageGenRequestService {
     });
 
     try {
-      await sqsService.enqueueMessage(QUEUE_NAME, {
+      await sqsService.enqueueMessage(QUEUE_NAME!, {
         operation: 'generate_image',
         request_id: created.id,
         campaign_id: input.campaignId // localstack requires this to match the queue

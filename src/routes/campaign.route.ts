@@ -1,14 +1,20 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import CampaignService from '../services/campaign.service';
 import { CampaignIn } from '../interfaces/campaign.interface';
+import { IUser } from '../interfaces/user.interface';
 import createLogger from '../config/logger';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
+import { getUser } from '../utils/auth';
+// import { authMiddleware } from '../middlewares/auth.middleware';
+// interface AuthRequest extends Request {
+//   user?: IUser;
+// }
 import campaignService from '../services/campaign.service';
 
 const logger = createLogger(module);
-const router = Router();
+const CampaignRouter = Router();
 const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
@@ -54,10 +60,24 @@ const csvUpload = multer({
     }
   },
 });
-
-router.post('/create', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const user = getUser(req); 
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
+   // const user = (req as AuthRequest).user;
+    //const user = (req as any).user;
+    // if (!user || !user.id || !user.name) {
+    //     return res.status(401).json({ message: "User information is missing or incomplete in the token." });
+    // }
+    if (!campaignname || !verticalId || !templateId || !assets) {
+      return res.status(400).json({ 
+        error: "Bad Request",
+        message: "Missing required fields. Body must include campaignname, verticalId, templateId, and an assets array."
+      });
+    }
+    if (!Array.isArray(assets) || assets.length === 0) {
+      return res.status(400).json({ message: "'assets' array cannot be empty." });
+    }
 
     const campaignIn: CampaignIn = {
       campaignname,
@@ -66,25 +86,31 @@ router.post('/create', async (req: Request, res: Response, next: NextFunction) =
       todate,
       verticalId: Number(verticalId),
       templateId: Number(templateId),
+      createdByUserID: Number(user?.id),
+      createdByName: user?.name,
       assets: assets.map((id: string) => Number(id)),
     };
 
     const campaignOut = await CampaignService.create(campaignIn);
     res.status(201).json(campaignOut);
   } catch (error: any) {
-    logger.error(`${error.message}`);
+    logger.error(`Route Error in /campaigns/create: ${error.message}`);
     let status = 500;
     const message = error.message || 'Internal Server Error';
 
     if (/required|invalid/i.test(message)) status = 400;
-    else if (/already exists/i.test(message)) status = 409;
+    else if (error.name === 'SequelizeUniqueConstraintError' || /already exists/i.test(message)) {
+      status = 409; 
+      res.status(status).json({ message: `A campaign with the name '${req.body.campaignname}' already exists.` });
+      return;
+    } 
     else if (/not belong to Vertical|not found|does not exist|do not exist/i.test(message)) status = 404;
 
     res.status(status).json({ message });
   }
 });
 
-router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const campaigns = await CampaignService.list(req.query);
     res.status(200).json(campaigns);
@@ -95,14 +121,13 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
+CampaignRouter.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const campaignId = Number(req.params.campaignId);
     if (isNaN(campaignId)) {
       logger.error('A valid numeric campaignId is required.');
       return res.status(400).json({ message: 'A valid numeric campaignId is required.' });
     }
-
     const campaign = await CampaignService.getById(campaignId);
     res.status(200).json(campaign);
   } catch (error: any) {
@@ -113,7 +138,7 @@ router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFun
   }
 });
 /* ---------------- IMAGE UPLOAD ROUTE ---------------- */
-router.post('/image/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+CampaignRouter.post('/image/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
   const { campaignId } = req.body;
   const files = req.files as Express.Multer.File[];
 
@@ -138,7 +163,7 @@ router.post('/image/upload', imageUpload.array('images'), async (req: Request, r
 });
 
 /* ---------------- CSV UPLOAD ROUTE ---------------- */
-router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Response) => {
+CampaignRouter.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Response) => {
   const { campaignId } = req.body;
   const files = req.files as Express.Multer.File[];
 
@@ -161,8 +186,9 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
     res.status(500).json({ error: message });
   }
 });
+
 //----------------------------upload to exportimage s3-----------------------------
-router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
   const { campaignId } = req.body;
   const {requestId}=req.body;
   const files = req.files as Express.Multer.File[];
@@ -193,7 +219,7 @@ router.post('/image/exported/upload', imageUpload.array('images'), async (req: R
 
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
-router.get('/:campaignId/images/:imageName', async (req, res) => {
+CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
   try {
     const { campaignId, imageName } = req.params;
     const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
@@ -218,34 +244,34 @@ router.get('/:campaignId/images/:imageName', async (req, res) => {
   }
 });
 
-router.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
-  const { campaignId } = req.body;
-  const {requestId}=req.body;
-  const files = req.files as Express.Multer.File[];
+// CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async (req: Request, res: Response) => {
+//   const { campaignId } = req.body;
+//   const {requestId}=req.body;
+//   const files = req.files as Express.Multer.File[];
 
-  if (!campaignId) {
-    logger.error('campaignId is required');
-    return res.status(400).json({ message: 'campaignId is required' });
-  }
-  if(!requestId){
-    logger.error('requestId is required');
-    return res.status(400).json({ message: 'requestId is required' });
-  }
+//   if (!campaignId) {
+//     logger.error('campaignId is required');
+//     return res.status(400).json({ message: 'campaignId is required' });
+//   }
+//   if(!requestId){
+//     logger.error('requestId is required');
+//     return res.status(400).json({ message: 'requestId is required' });
+//   }
 
-  if (!files || files.length === 0) {
-    logger.error('Valid image files (.png, .jpg, .jpeg) are required');
-    return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
-  }
+//   if (!files || files.length === 0) {
+//     logger.error('Valid image files (.png, .jpg, .jpeg) are required');
+//     return res.status(400).json({ message: 'Valid image files (.png, .jpg, .jpeg) are required' });
+//   }
 
-  try {
-    const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
-    res.status(200).json(results);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Internal Server Error';
-    logger.error(message);
-    res.status(500).json({ error: message });
-  }
-});
+//   try {
+//     const results = await Promise.all(files.map(file => CampaignService.uploadexportedImage(Number(campaignId), Number(requestId), file)));
+//     res.status(200).json(results);
+//   } catch (err: unknown) {
+//     const message = err instanceof Error ? err.message : 'Internal Server Error';
+//     logger.error(message);
+//     res.status(500).json({ error: message });
+//   }
+// });
 
 
 /* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
@@ -287,7 +313,7 @@ router.post('/image/exported/upload', imageUpload.array('images'), async (req: R
 // );
 
 
-router.post(
+CampaignRouter.post(
   '/image/asset/upload',
   imageUpload.single('image'),
   async (req: Request, res: Response) => {
@@ -324,7 +350,7 @@ router.post(
 );
 
 // Get asset image
-router.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, res: Response) => {
+CampaignRouter.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, res: Response) => {
   try {
     const { campaignId, assetId, imageName } = req.params;
     const cId = Number(campaignId);
@@ -354,4 +380,31 @@ router.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, 
   }
 });
 
-export default router;
+/* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
+  try {
+    const { campaignId, imageName } = req.params;
+    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
+
+    const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
+
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = '';
+
+    if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else {
+      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.send(imageBuffer);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+
+export default CampaignRouter;

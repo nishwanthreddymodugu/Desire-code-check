@@ -4,6 +4,7 @@ import { Template } from "./template";
 import { Vertical } from "./vertical";
 import { Asset } from "./asset";
 import { CampaignAsset } from "./campaignasset";
+import { User } from "./user";
 @Index(['status', 'fromDate', 'toDate'])
 @Table({ tableName: "campaigns", timestamps: true, createdAt: "createdAt", updatedAt: "updatedAt" })
 export class Campaign extends Model<InferAttributes<Campaign>, InferCreationAttributes<Campaign>> {
@@ -15,6 +16,7 @@ export class Campaign extends Model<InferAttributes<Campaign>, InferCreationAttr
 
   @AllowNull(false)
   @Column(DataType.STRING(150))
+  @Column({ type: DataType.STRING(150), unique: true })
   declare campaignName: string;
 
   @Column(DataType.TEXT)
@@ -60,9 +62,13 @@ export class Campaign extends Model<InferAttributes<Campaign>, InferCreationAttr
   @HasMany(() => CampaignAsset, 'campaignId')
   declare campaignAssets: CreationOptional<CampaignAsset[]>;
   // -------------------------
-  
-  @Column(DataType.STRING(100))
-  declare createdBy: CreationOptional<string | null>;
+  @ForeignKey(() => User)
+  @Column({ type: DataType.INTEGER, field: 'createdBy' })
+  declare createdBy: CreationOptional<number | null>;
+
+  @BelongsTo(() => User, "createdBy")
+  declare creator: CreationOptional<User>;
+
 
   @Column(DataType.STRING(100))
   declare updatedBy: CreationOptional<string | null>;

@@ -7,6 +7,9 @@ import { Campaign } from '../models/campaign';
 import { CampaignAsset } from '../models/campaignasset';
 import createLogger from '../config/logger';
 import { ImageGenRequest } from '../models/image_gen';
+import { User } from '../models/user';
+
+
 
 dotenv.config();
 
@@ -20,15 +23,27 @@ if (!dbUrl) {
 const sequelizeOptions: SequelizeOptions = {
     dialect: 'postgres',
     logging: false,
-    models: [Vertical, Template, Asset, Campaign, CampaignAsset,ImageGenRequest],
+    // register all models here (User was imported but not registered)
+    models: [Vertical, Template, Asset, Campaign, CampaignAsset,ImageGenRequest, User],
     // dialectOptions: {
     //     ssl: {
     //         require: true,
     //         rejectUnauthorized: false, // This is mandatory for NeonDB
     //     },
     // },
+
+
 };
 
 
-export const sequelize = new Sequelize(dbUrl, sequelizeOptions);
-logger.info('Sequelize instance created successfully and models registered.');
+let _sequelize: Sequelize;
+try {
+    _sequelize = new Sequelize(dbUrl, sequelizeOptions);
+    logger.info('Sequelize instance created successfully and models registered.');
+} catch (err: any) {
+    // Log full stack to help debug initialization errors (shows up in logs)
+    logger.error(`Failed to initialize Sequelize: ${err && (err.stack || err.message)}`);
+    throw err;
+}
+
+export const sequelize = _sequelize;
