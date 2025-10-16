@@ -411,15 +411,25 @@ public async uploadAssetImage(
   try {
     const existingObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
 
-    if (existingObjects && existingObjects.length > 0) {
-      logger.info(`Image already exists for campaignId=${campaignId}, assetId=${assetId}`);
-      return {
-        campaignId,
-        assetId,
-        s3Key: existingObjects[0].key,
-        message: 'Image already exists for this assetId',
-      };
-    }
+    // 🧹 If an image already exists, delete it before uploading the new one
+if (existingObjects.length > 0) {
+  logger.info(`Existing image found for campaignId=${campaignId}, assetId=${assetId}. Deleting old image...`);
+
+  // Use the already configured S3Client (v3)
+  const s3Client = (s3Service as any).client;
+  const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+
+  await Promise.all(
+    existingObjects.map(obj =>
+      s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: obj.key,
+        })
+      )
+    )
+  );
+}
 
     // ✅ Upload new file
     const fileBuffer = await fs.readFile(file.path);

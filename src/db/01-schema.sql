@@ -90,6 +90,20 @@ CREATE TABLE IF NOT EXISTS "batch_requests" (
     "updatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create batch_campaigns table
+CREATE TABLE IF NOT EXISTS "batch_campaigns" (
+    "id" SERIAL PRIMARY KEY,
+    "requestId" INTEGER NOT NULL REFERENCES "batch_requests"("id") ON DELETE CASCADE,
+    "campaignName" VARCHAR(255) NOT NULL,
+    "data_path" VARCHAR(500),
+    "status" VARCHAR(50) DEFAULT 'pending',
+    "createdBy" VARCHAR(100),
+    "updatedBy" VARCHAR(100),
+    "deleted" BOOLEAN DEFAULT FALSE,
+    "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+    "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS image_gen_requests (
   id BIGSERIAL PRIMARY KEY,
   prompt TEXT NOT NULL,
