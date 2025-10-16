@@ -12,10 +12,15 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   console.log(req.headers);
   console.log('------------------------');
   const token = req.headers['x-auth'] as string;
+  
   const picassoToken = req.headers['x-picasso-auth'] as string;
+  console.log(`Received Picasso Token: ${picassoToken}`);
+  console.log(`Expected Picasso Token: ${process.env.PICASSO_TOKEN}`);
 if (picassoToken) {
   if(picassoToken === process.env.PICASSO_TOKEN){
     logger.info('Authentication successful: Internal service call detected (Picasso).');
+    console.log('Picasso token matched. Bypassing standard authentication.----', picassoToken); 
+    
     const payload = { id: 0, name: 'Picasso', email:"", password: "" };
     (req as Request & { user?: IUser }).user = payload;
     return next();
