@@ -7,7 +7,21 @@ import { IUser } from '../interfaces/user.interface';
 const logger = createLogger(module);
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+
+  console.log('--- RECEIVED HEADERS ---');
+  console.log(req.headers);
+  console.log('------------------------');
   const token = req.headers['x-auth'] as string;
+  const picassoToken = req.headers['x-picasso-auth'] as string;
+if (picassoToken) {
+  if(picassoToken === process.env.PICASSO_TOKEN){
+    logger.info('Authentication successful: Internal service call detected (Picasso).');
+    const payload = { id: 0, name: 'Picasso', email:"", password: "" };
+    (req as Request & { user?: IUser }).user = payload;
+    return next();
+  }
+}
+console.log('token:', token);
 
   if (!token) {
     logger.warn('Authentication failed: Missing x-auth header.');

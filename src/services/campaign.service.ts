@@ -74,19 +74,30 @@ class CampaignService {
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
         // const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
         // const clonedFigmaIds = await Promise.all(clonePromises);
-        const clonePromises = originalAssets.map(asset => FigmaClient.cloneFile(asset.figmaId!));
-        const clonedFigmaIds = await Promise.all(clonePromises);
+        //const clonePromises = originalAssets.map(asset => FigmaClient.cloneFile(asset.figmaId!));
+        //const clonedFigmaIds = await Promise.all(clonePromises);
+        const clonePromises = originalAssets.map(asset => 
+          FigmaClient.cloneFile(asset.figmaId!, newCampaign.campaignId, asset.assetId)
+      );
+      const clonedFigmaIds = await Promise.all(clonePromises);
         const campaignAssetsToCreate = originalAssets.map((asset, index) => ({
           campaignId: newCampaign.campaignId,
           assetId: asset.assetId,
           assetName: asset.assetName,
           clonedFigmaId: clonedFigmaIds[index].clonedFileId,
         }));
+        //const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
         const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
+
+        logger.info(`Service: Triggering export for ${createdAssets.length} assets...`);
+
+        // const exportPromises = createdAssets.map(asset => 
+        //     FigmaClient.exportAssetImage(asset.campaignId, asset.assetId)
+        // );
+        // await Promise.all(exportPromises);
 
         await transaction.commit();
         logger.info(`Service: Campaign created successfully (ID: ${newCampaign.campaignId})`);
-
         // --- Step 3: Data Enrichment & Background Indexing ---
         try {
             const campaignDocForSearch: CampaignDocument = {
