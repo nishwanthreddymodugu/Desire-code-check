@@ -1,6 +1,6 @@
 import { CreationAttributes, FindOptions } from 'sequelize';
 import { Asset } from '../models/asset';
-import createLogger from '../config/logger';  // your Winston logger
+import createLogger from '../config/logger';  
 const logger = createLogger(module);
 
 class AssetDAO {
