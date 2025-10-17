@@ -11,7 +11,6 @@ const queueName = process.env.IMAGE_GEN_QUEUE!;
 const backendBaseUrl = process.env.BACKEND_API_BASE_URL || "http://localhost:8081";
 const flaskApiEndpoint = process.env.FLASK_API_ENDPOINT || "http://localhost:5000/api/v1/picasso/generate";
 
-// Get the secret token from the environment. This is our "master key".
 const PICASSO_TOKEN = process.env.PICASSO_TOKEN;
 console.log("picasso token:", PICASSO_TOKEN);
 
@@ -30,7 +29,6 @@ const sqsClient = new SQSClient({
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const retryRequest = async (fn: () => Promise<any>, retries = 3, delayMs = 1000, context = "unknown"): Promise<any> => {
-    // This retry logic is correct and does not need to change.
     let attempt = 0;
     while (attempt < retries) {
         try {
@@ -81,13 +79,11 @@ const pollQueue = async (queueUrl: string): Promise<void> => {
             throw new Error("Invalid SQS message: missing request_id or campaign_id");
           }
 
-          // --- THIS IS THE FIX ---
-          // Step 1: Fetch request details from backend, INCLUDING the secret token.
+          // Step 1: Fetch request details from backend
           const getDetailsUrl = `${backendBaseUrl}/api/v1/campaign/${campaign_id}/image/requests/${request_id}/get`;
           logger.info(`🔍 Fetching job details from: ${getDetailsUrl}`);
 
           const detailsResponse = await retryRequest(
-            // The axios.get call now correctly includes the 'x-picasso-auth' header.
             () => {
               console.log('headers:', { 'x-picasso-auth': PICASSO_TOKEN });
               return axios.get(getDetailsUrl, {
@@ -96,9 +92,7 @@ const pollQueue = async (queueUrl: string): Promise<void> => {
             },
             3, 1000, "fetch-details"
           );
-          
-          // --------------------
-
+    
           if (!detailsResponse || !detailsResponse.data) {
             throw new Error(`No data found for request_id ${request_id}`);
           }
@@ -110,11 +104,6 @@ const pollQueue = async (queueUrl: string): Promise<void> => {
             () => axios.post(flaskApiEndpoint, fullJobDetails, { timeout: 60000 }),
             2, 2000, "flask-api"
           );
-
-          // if (flaskResponse) {
-          //   finalStatus = "Completed";
-          //   logger.info(`✅ Flask job processed successfully for request ${request_id}`);
-          // }
           if (flaskResponse && flaskResponse.data) {
             logger.info(`✅ Flask job processed successfully for request ${request_id}`);
             finalStatus = "Completed";
@@ -124,27 +113,21 @@ const pollQueue = async (queueUrl: string): Promise<void> => {
         } catch (jobErr: any) {
           logger.error(`💥 Job processing failed: ${jobErr.message}`);
         }
-
-        // --- AND THIS IS THE FIX ---
         // Step 3: Update final status, INCLUDING the secret token.
         if (job.request_id && job.campaign_id) {
           const updateUrl = `${backendBaseUrl}/api/v1/campaign/${job.campaign_id}/image/requests/${job.request_id}/update-status`;
           const statusToSend = finalStatus.toLowerCase();
           
           await retryRequest(
-            // The axios.put call also correctly includes the 'x-picasso-auth' header.
             () => axios.put(updateUrl, { new_status: statusToSend }, {
               headers: { 'x-picasso-auth': PICASSO_TOKEN }
             }),
             3, 1000, "update-status"
           );
-          // --------------------
-
           logger.info(`📦 Updated request ${job.request_id} -> ${finalStatus}`);
         }
         
         // Step 4: Always delete the message after processing (success or failure)
-        // to prevent infinite retry loops for unfixable errors.
         if (message.ReceiptHandle) {
           await sqsClient.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: message.ReceiptHandle }));
           logger.info(`🗑️ Deleted message for request ${job.request_id} from SQS.`);

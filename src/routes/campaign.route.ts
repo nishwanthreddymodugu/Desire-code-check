@@ -344,36 +344,6 @@ CampaignRouter.get('/:campaignId/asset/:assetId', async (req: Request, res: Resp
     res.status(status).json({ error: message });
   }
 });
-// Get asset image
-// CampaignRouter.get('/image/asset/:campaignId/:assetId/:imageName', async (req: Request, res: Response) => {
-//   try {
-//     const { campaignId, assetId, imageName } = req.params;
-//     const cId = Number(campaignId);
-//     const aId = Number(assetId);
-
-//     if (isNaN(cId) || isNaN(aId)) {
-//       return res.status(400).json({
-//         error: 'campaignId and assetId are required and must be valid numbers',
-//       });
-//     }
-
-//     const { buffer, key } = await CampaignService.getAssetImage(cId, aId, imageName);
-
-//     // Set content type
-//     const ext = path.extname(imageName).toLowerCase();
-//     let contentType = 'application/octet-stream';
-//     if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-//     else if (ext === '.png') contentType = 'image/png';
-
-//     res.setHeader('Content-Type', contentType);
-//     res.send(buffer);
-//   } catch (error: any) {
-//     const message = error.message || 'Failed to retrieve image';
-//     const status = /not found/i.test(message) ? 404 : 500;
-//     logger.error(message);
-//     res.status(status).json({ error: message });
-//   }
-// });
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
 CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
