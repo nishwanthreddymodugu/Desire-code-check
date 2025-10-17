@@ -1,7 +1,7 @@
 import ImageGenRequestDAO from '../daos/imageGenRequest.dao';
 import sqsService from './sqs.service';
 import createLogger from '../config/logger';
-import { ImageRequestStatusOut } from '../interfaces/imageGenRequest.interface';
+//import { ImageRequestStatusOut } from '../interfaces/imageGenRequest.interface';
 
 const logger = createLogger(module);
 const QUEUE_NAME = process.env.IMAGE_GEN_QUEUE;
@@ -123,22 +123,22 @@ class ImageGenRequestService {
     };
   }
 
-  /**
-   * Fetches the current status of a specific image generation request.
-   * @returns A promise that resolves with the request's ID and status.
-   */
-  public async getRequestStatus(requestId: number, campaignId: number): Promise<ImageRequestStatusOut> {
-    logger.info(`Service: Fetching status for request ID: ${requestId}`);
+  // /**
+  //  * Fetches the current status of a specific image generation request.
+  //  * @returns A promise that resolves with the request's ID and status.
+  //  */
+  // public async getRequestStatus(requestId: number, campaignId: number): Promise<ImageRequestStatusOut> {
+  //   logger.info(`Service: Fetching status for request ID: ${requestId}`);
     
-    const requestStatus = await ImageGenRequestDAO.findStatusById(requestId, campaignId);
+  //   const requestStatus = await ImageGenRequestDAO.findStatusById(requestId, campaignId);
     
-    if (!requestStatus) {
-        throw { status: 404, message: `Image generation request with ID ${requestId} not found in campaign ${campaignId}.` };
-    }
-    return {
-        requestId: requestStatus.id,
-        status: requestStatus.status,
-    };
-  }
+  //   if (!requestStatus) {
+  //       throw { status: 404, message: `Image generation request with ID ${requestId} not found in campaign ${campaignId}.` };
+  //   }
+  //   return {
+  //       requestId: requestStatus.id,
+  //       status: requestStatus.status,
+  //   };
+  // }
 }
 export default new ImageGenRequestService();

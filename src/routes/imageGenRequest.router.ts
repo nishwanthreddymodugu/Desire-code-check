@@ -121,7 +121,8 @@ router.get('/:campaignId/image/requests/:requestId/get', async (req: Request, re
       use_ref_img: row.use_ref_img,
       use_template_prompt: row.use_template_prompt,
       use_user_given_imgs: row.use_user_given_imgs,
-      user_given_imgs: row.user_given_imgs ?? ''
+      user_given_imgs: row.user_given_imgs ?? '',
+      status: row.status
     });
   } catch (e: any) {
     return sendError(res, 500, e?.message || 'Failed to retrieve request');
@@ -168,23 +169,23 @@ router.put('/:campaignId/image/requests/:requestId/update-status', async (req: R
   }
 });
 
-  router.get('/:campaignId/image/requests/:requestId/status', async (req: Request, res: Response) => {
-    try {
-        const { campaignId, requestId } = req.params;
+//   router.get('/:campaignId/image/requests/:requestId/status', async (req: Request, res: Response) => {
+//     try {
+//         const { campaignId, requestId } = req.params;
 
-        const campaignIdNum = Number(campaignId);
-        const requestIdNum = Number(requestId);
-        if (isNaN(campaignIdNum) || isNaN(requestIdNum)) {
-            return res.status(400).json({ message: 'campaignId and requestId must be valid numbers.' });
-        }
+//         const campaignIdNum = Number(campaignId);
+//         const requestIdNum = Number(requestId);
+//         if (isNaN(campaignIdNum) || isNaN(requestIdNum)) {
+//             return res.status(400).json({ message: 'campaignId and requestId must be valid numbers.' });
+//         }
 
-        const result = await imageGenService.getRequestStatus(requestIdNum, campaignIdNum);
-        return res.status(200).json(result);
+//         const result = await imageGenService.getRequestStatus(requestIdNum, campaignIdNum);
+//         return res.status(200).json(result);
 
-    } catch (error: any) {
-        // The catch block will handle the "Not Found" error from the service.
-        const status = error.status || 500;
-        return res.status(status).json({ message: error.message || 'Failed to retrieve request status.' });
-    }
-});
+//     } catch (error: any) {
+//         // The catch block will handle the "Not Found" error from the service.
+//         const status = error.status || 500;
+//         return res.status(status).json({ message: error.message || 'Failed to retrieve request status.' });
+//     }
+// });
 export default router;
