@@ -143,6 +143,7 @@ With the database container running, create the tables and populate them with da
     npm run db:seed
     ```
 
+
 ### 3. Set Up the Search Index
 
 Create the Elasticsearch index and populate it with data:
@@ -155,7 +156,19 @@ Create the Elasticsearch index and populate it with data:
 
 2. **Index the Data**: Write a script to read from the PostgreSQL `campaigns` table and send each record to the `POST /api/v1/search/campaign/add` endpoint.
 
+3. **Add index on campaign(Bulk index)**
+ ```bash
+    npm run index:campaigns
+    ```
+
+
 ---
+
+### 3. Run the listener to Generate Image
+
+ ```bash
+    npm run start-listener
+    ```
 
 ## 🚀 Running the Application
 

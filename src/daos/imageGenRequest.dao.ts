@@ -90,6 +90,21 @@ class ImageGenRequestDAO {
       status: plain.status as string
     };
   }
+  /** 
+     * @returns An object with the id and status, or null if not found.
+     */
+  public async findStatusById(requestId: number, campaignId: number): Promise<{ id: number, status: string } | null> {
+    const request = await ImageGenRequest.findOne({
+        where: {
+            id: requestId,
+            campaignId: campaignId
+        },
+        attributes: ['id', 'status'] 
+    });
+    return request ? request.get({ plain: true }) : null;
 }
+
+}
+
 
 export default new ImageGenRequestDAO();
