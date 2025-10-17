@@ -8,7 +8,8 @@ const router = Router();
 
 router.post('/save', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { assetId, assetname, description, figmaURL, figmaId, templateId, verticalId } = req.body;
+    const { assetId, assetname, description, figmaURL, figmaId, templateId, verticalId, prod_image_width, prod_image_height } = req.body;
+
     const templateIdAsNumber = Number(templateId);
     const verticalIdAsNumber = Number(verticalId);
 
@@ -20,6 +21,8 @@ router.post('/save', async (req: Request, res: Response, next: NextFunction) => 
       figmaId,
       templateId: templateIdAsNumber,
       verticalId: verticalIdAsNumber,
+      prod_image_width: prod_image_width !== undefined ? Number(prod_image_width) : 200,
+      prod_image_height: prod_image_height !== undefined ? Number(prod_image_height) : 200,
     };
 
     const assetOut = await AssetService.save(assetIn);

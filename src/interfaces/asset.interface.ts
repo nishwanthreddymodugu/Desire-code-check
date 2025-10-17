@@ -6,6 +6,8 @@ export interface AssetIn {
     figmaId?: string | null;
     templateId: number;
     verticalId: number;
+    prod_image_width?: number;
+    prod_image_height?: number;
 }
 
 export interface AssetOut {
@@ -16,4 +18,6 @@ export interface AssetOut {
     figmaId: string | null;
     templateId: number;
     verticalId: number;
+    prod_image_width: number;
+    prod_image_height: number;
 }
