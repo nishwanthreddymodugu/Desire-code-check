@@ -43,10 +43,3 @@ export interface ImageGenGetOut {
 export interface ImageGenUpdateStatusIn {
   new_status: 'requested' | 'pending' | 'completed' | 'cancelled';
 }
-
-// export interface ImageRequestStatusOut {
-//   requestId: number;
-//   status: string;
-// }
-
-// No Out interface because the route intentionally returns 204 with no body.

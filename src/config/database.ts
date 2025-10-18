@@ -23,7 +23,6 @@ if (!dbUrl) {
 const sequelizeOptions: SequelizeOptions = {
     dialect: 'postgres',
     logging: false,
-    // register all models here (User was imported but not registered)
     models: [Vertical, Template, Asset, Campaign, CampaignAsset,ImageGenRequest, User],
     // dialectOptions: {
     //     ssl: {
@@ -31,8 +30,6 @@ const sequelizeOptions: SequelizeOptions = {
     //         rejectUnauthorized: false, // This is mandatory for NeonDB
     //     },
     // },
-
-
 };
 
 
@@ -41,7 +38,6 @@ try {
     _sequelize = new Sequelize(dbUrl, sequelizeOptions);
     logger.info('Sequelize instance created successfully and models registered.');
 } catch (err: any) {
-    // Log full stack to help debug initialization errors (shows up in logs)
     logger.error(`Failed to initialize Sequelize: ${err && (err.stack || err.message)}`);
     throw err;
 }

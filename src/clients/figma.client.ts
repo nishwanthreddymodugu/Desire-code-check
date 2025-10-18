@@ -62,6 +62,7 @@ class FigmaClient {
             throw new Error('Failed to clone asset with Figma API.');
         }
     }
+
 }
 
 export default new FigmaClient();

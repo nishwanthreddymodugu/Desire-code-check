@@ -19,7 +19,6 @@ class UserDAO {
   }
 
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
-    // The User model uses `userId` as the primary key attribute, not `id`.
     await User.update({ refreshToken }, { where: { userId: userId } });
   }
 }

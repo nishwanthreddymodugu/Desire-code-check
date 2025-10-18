@@ -6,31 +6,14 @@ const logger = createLogger(module);
 
 const CAMPAIGN_INDEX = 'campaign_search';
 class SearchClient {
-    
-    //public async createCampaignIndex(): Promise<void> {
-    //     try {
-    //     const indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
-    //     if (!indexExists) {
-    //             await esClient.indices.create({ index: CAMPAIGN_INDEX });
-    //             logger.info(`Campaign index created successfully.`);
-    //         } else {
-    //             logger.info(`Campaign index already exists.`);
-    //         }
-    //     } catch (error) {
-    //         logger.error(`Failed to create campaign index:`, error);
-    //         throw error;
-    //     }
-    // }
+
     public async createCampaignIndex(): Promise<void> {
         let indexExists = false;
-
-        // Check if index exists
         try {
-            // For Elasticsearch JS client v7+, .exists returns a boolean
             indexExists = await esClient.indices.exists({ index: CAMPAIGN_INDEX });
         } catch (err) {
             logger.error(`Failed to check if campaign index exists:`, err);
-            throw err; // rethrow to let outer catch handle it if needed
+            throw err; 
         }
 
         // Create index if it does not exist
@@ -52,19 +35,6 @@ class SearchClient {
      * If a card with the same ID already exists, it just updates it.
      * @param document The campaign data to be saved.
      */
-    // public async addOrUpdateCampaign(document: CampaignDocument): Promise<void> {
-    //     try {
-    //     await esClient.index({
-    //         index: CAMPAIGN_INDEX,
-    //         id: document.campaignId.toString(),
-    //         document: document,
-    //         refresh: true, // Make this change searchable immediately
-    //     });
-    //     } catch (error) {
-    //         logger.error(`Failed to add/update campaign:`, error);
-    //         throw error;
-    //     }
-    // }
     public async addOrUpdateCampaign(document: CampaignDocument): Promise<void> {
         try {
             try {
@@ -84,7 +54,6 @@ class SearchClient {
         }
     }
     
-
     /**
      * Takes a fully prepared search plan and executes it.
      * @param query The complex search plan created by the "Manager" (the Service).
@@ -104,9 +73,6 @@ class SearchClient {
     public async bulkIndexCampaigns(documents: CampaignDocument[]): Promise<any> {
         try {
             if (documents.length === 0) return;
-
-            // The Elasticsearch bulk API requires a special format:
-            // an array of { action: metadata } followed by the document source.
             const operations = documents.flatMap(doc => [
                 { index: { _index: CAMPAIGN_INDEX, _id: doc.campaignId.toString() } },
                 doc
