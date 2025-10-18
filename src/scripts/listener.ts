@@ -1,7 +1,12 @@
-import { SQSClient, GetQueueUrlCommand, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
+import {
+    SQSClient,
+    GetQueueUrlCommand,
+    ReceiveMessageCommand,
+    DeleteMessageCommand,
+} from "@aws-sdk/client-sqs";
 import axios from "axios";
 import createLogger from "../config/logger";
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 const logger = createLogger(module);
 
 dotenv.config();
@@ -66,7 +71,7 @@ const resolveQueueUrl = async (): Promise<string> => {
 
 // Main polling loop
 const pollQueue = async (queueUrl: string): Promise<void> => {
-  logger.info(`🚀 Listening for messages on queue '${queueName}'...`);
+    logger.info(`🚀 Listening for messages on queue '${queueName}'...`);
 
   while (true) {
   try {
@@ -179,3 +184,4 @@ const start = async () => {
 };
 
 start();
+
