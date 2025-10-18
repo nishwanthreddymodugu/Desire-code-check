@@ -20,6 +20,12 @@ export class CampaignAsset extends Model<InferAttributes<CampaignAsset>, InferCr
     @Column({ type: DataType.STRING(100), field: 'clonedFigmaId' })
     declare clonedFigmaId: CreationOptional<string | null>;
 
+    @Column({ type: DataType.INTEGER, field: 'prod_image_width' })
+    declare prod_image_width: CreationOptional<number>;
+
+    @Column({ type: DataType.INTEGER, field: 'prod_image_height' })
+    declare prod_image_height: CreationOptional<number>;
+
     @Column({ type: DataType.STRING(100), field: 'createdBy' })
     declare createdBy: CreationOptional<string | null>;
 

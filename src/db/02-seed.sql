@@ -43,11 +43,11 @@ VALUES
   ('Campaign 5', 'Campaign description 5', '2026-01-01', '2026-01-31', 'inactive', 3, 5, 1);
 -- --------------------
 -- Inserting rows into campaignassets
-INSERT INTO "campaignassets" ("campaignId", "assetId", "assetname", "clonedFigmaId")
+INSERT INTO "campaignassets" ("campaignId", "assetId", "assetname", "clonedFigmaId", "prod_image_width", "prod_image_height")
 VALUES
-  (1, 1, 'Asset 1', 'cloneFig01'), (1, 2, 'Asset 2', 'cloneFig02'),
-  (2, 3, 'Asset 3', 'cloneFig03'), (2, 4, 'Asset 4', 'cloneFig04'),
-  (3, 5, 'Asset 5', 'cloneFig05'), (3, 6, 'Asset 6', 'cloneFig06'),
-  (4, 7, 'Asset 7', 'cloneFig07'), (4, 8, 'Asset 8', 'cloneFig08'),
-  (5, 9, 'Asset 9', 'cloneFig09'), (5, 10, 'Asset 10', 'cloneFig10');
+  (1, 1, 'Asset 1', 'cloneFig01',200,200), (1, 2, 'Asset 2', 'cloneFig02',200,200),
+  (2, 3, 'Asset 3', 'cloneFig03',200,200), (2, 4, 'Asset 4', 'cloneFig04',200,200),
+  (3, 5, 'Asset 5', 'cloneFig05',200,200), (3, 6, 'Asset 6', 'cloneFig06',200,200),
+  (4, 7, 'Asset 7', 'cloneFig07',200,200), (4, 8, 'Asset 8', 'cloneFig08',200,200),
+  (5, 9, 'Asset 9', 'cloneFig09',200,200), (5, 10, 'Asset 10', 'cloneFig10',200,200);
 
