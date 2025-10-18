@@ -273,21 +273,25 @@ public async uploadExportedImages(
 
   const results = await Promise.all(
     files.map(async file => {
-      const s3Key = `campaigns/${campaignId}/images/exported/${requestId}/${file.originalname}`;
+      const extension = file.originalname.split('.').pop(); // extract file extension
+      const newFileName = `${requestId}.${extension}`; // rename file to requestId.ext
+      const s3Key = `campaigns/${campaignId}/images/exported/${newFileName}`; // ✅ no extra folder
 
-      const existingObjects = await s3Service.getObjectsByPrefix(bucket, `campaigns/${campaignId}/images/exported/${requestId}/`);
-      const alreadyExists = existingObjects.some(obj => obj.key === s3Key);
+      // Check if a file with this exact name already exists
+      const existingObjects = await s3Service.getObjectsByPrefix(bucket, `campaigns/${campaignId}/images/exported/`);
+      const alreadyExists = existingObjects.some(obj => obj.key?.endsWith(newFileName));
 
       if (alreadyExists) {
         return {
           campaignId,
           requestId,
-          filename: file.originalname,
+          filename: newFileName,
           s3Key,
           message: 'Image already exists for this requestId'
         };
       }
 
+      // Upload new image
       const fileBuffer = await fs.readFile(file.path);
       await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
       try {
@@ -299,7 +303,7 @@ public async uploadExportedImages(
       return {
         campaignId,
         requestId,
-        filename: file.originalname,
+        filename: newFileName,
         s3Key,
         message: 'Image uploaded successfully'
       };
@@ -308,36 +312,39 @@ public async uploadExportedImages(
 
   return results;
 }
+public async getExportedImage(
+  campaignId: number,
+  requestId: number
+): Promise<{ buffer: Buffer; contentType: string; s3Key: string }> {
+  if (!campaignId) throw new Error('campaignId is required');
+  if (!requestId) throw new Error('requestId is required');
 
-  public async getExportedImage(
-    campaignId: number,
-    requestId: number
-  ): Promise<{ buffer: Buffer; contentType: string; s3Key: string }> {
-    if (!campaignId) throw new Error('campaignId is required');
-    if (!requestId) throw new Error('requestId is required');
+  const bucket = process.env.IMAGE_BUCKET;
+  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
-    const bucket = process.env.IMAGE_BUCKET;
-    if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+  // Since we store as campaigns/{campaignId}/images/exported/{requestId}.png
+  const s3Prefix = `campaigns/${campaignId}/images/exported/`;
+  const expectedFileName = `${requestId}.png`;
+  const expectedKey = `${s3Prefix}${expectedFileName}`;
 
-    const s3Prefix = `campaigns/${campaignId}/images/exported/${requestId}/`;
+  // Get all objects under the prefix and find the one matching {requestId}.png
+  const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+  const imageObject = allObjects.find(obj => obj.key === expectedKey);
 
-    const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
-    if (!allObjects || allObjects.length === 0) {
-      throw new Error('Image not found for given campaignId and requestId');
-    }
-
-    // Take the first image
-    const imageObject = allObjects[0];
-    const buffer = imageObject.body as Buffer;
-    const s3Key = imageObject.key;
-
-    const ext = path.extname(s3Key).toLowerCase();
-    let contentType = 'application/octet-stream';
-    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else if (ext === '.png') contentType = 'image/png';
-
-    return { buffer, contentType, s3Key };
+  if (!imageObject || !imageObject.body) {
+    throw new Error('Image not found for given campaignId and requestId');
   }
+
+  const buffer = imageObject.body as Buffer;
+  const s3Key = imageObject.key;
+
+  const ext = path.extname(s3Key).toLowerCase();
+  let contentType = 'application/octet-stream';
+  if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+  else if (ext === '.png') contentType = 'image/png';
+
+  return { buffer, contentType, s3Key };
+}
 
 // public async uploadAssetImage(
 //   campaignId: number,
