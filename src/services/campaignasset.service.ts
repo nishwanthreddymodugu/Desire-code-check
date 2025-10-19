@@ -20,6 +20,8 @@ class CampaignAssetService {
           assetId: asset.assetId,
           assetname: asset.assetName,
           clonedFigmaId: asset.clonedFigmaId || null,
+          prod_image_width: asset.prod_image_width,
+          prod_image_height: asset.prod_image_height
         };
 
         logger.info(`Fetched asset: ${asset.assetName} (campaignId=${campaignId}, assetId=${assetId})`);

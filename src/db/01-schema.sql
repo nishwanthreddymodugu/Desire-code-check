@@ -152,3 +152,9 @@ ADD COLUMN IF NOT EXISTS "prod_image_width" INTEGER DEFAULT 200;
 
 ALTER TABLE "assets"
 ADD COLUMN IF NOT EXISTS "prod_image_height" INTEGER DEFAULT 200;
+
+ALTER TABLE "campaignassets"
+ADD COLUMN IF NOT EXISTS "prod_image_width" INTEGER DEFAULT 200;
+
+ALTER TABLE "campaignassets"
+ADD COLUMN IF NOT EXISTS "prod_image_height" INTEGER DEFAULT 200;

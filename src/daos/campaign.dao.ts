@@ -38,11 +38,6 @@ class CampaignDAO {
             throw error;
         }
     }
-
-    // public async findByName(name: string): Promise<Campaign | null> {
-    //     return Campaign.findOne({ where: { campaignName: name } });
-    // }
-
     
     public async list(options: FindOptions): Promise<Campaign[]> {
         try {
@@ -58,7 +53,6 @@ class CampaignDAO {
      * @param options The Sequelize query options, including the date range.
      */
     public async findAllForIndexing(options: FindOptions): Promise<Campaign[]> {
-        // We 'include' the related models to fetch their names in a single, efficient query.
         return Campaign.findAll({
             ...options,
             include: [Vertical, Template, Asset]

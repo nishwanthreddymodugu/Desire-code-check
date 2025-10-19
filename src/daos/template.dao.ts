@@ -4,9 +4,7 @@ import createLogger from '../config/logger';
 const logger = createLogger(module);
 
 class TemplateDAO {
-    /**
-     * Uses 'upsert' to either CREATE a new template or UPDATE an existing one.
-     */
+    
     public async save(data: CreationAttributes<Template>): Promise<Template> {
         try {
             const [template] = await Template.upsert(data);
@@ -16,10 +14,7 @@ class TemplateDAO {
             throw error;
         }
     }
-    
-    /**
-     * Finds all templates matching the given criteria.
-     */
+ 
     public async list(options: FindOptions): Promise<Template[]> {
         try {
             const templates = await Template.findAll(options);
@@ -30,9 +25,6 @@ class TemplateDAO {
         }
     }
 
-    /**
-     * Finds a single template by its primary key.
-     */
     public async findById(id: number): Promise<Template | null> {
         try {
             const template = await Template.findByPk(id);
