@@ -17,7 +17,7 @@ const backendBaseUrl =
     process.env.BACKEND_API_BASE_URL || "http://localhost:8081";
 const flaskApiEndpoint =
     process.env.FLASK_API_ENDPOINT ||
-    "http://0.0.0.0:5000/api/v1/picasso/generate";
+    "http://localhost:5005/api/v1/picasso/generate";
 
 const PICASSO_TOKEN = process.env.PICASSO_TOKEN;
 console.log("picasso token:", PICASSO_TOKEN);
