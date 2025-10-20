@@ -40,6 +40,8 @@ class AssetService {
           figmaId: data.figmaId,
           templateId: data.templateId,
           verticalId: data.verticalId,
+          prod_image_width: data.prod_image_width,  
+          prod_image_height: data.prod_image_height,
         };
 
         const savedAsset = await AssetDAO.save(dataToSave);
@@ -53,6 +55,8 @@ class AssetService {
           figmaId: savedAsset.figmaId,
           templateId: savedAsset.templateId,
           verticalId: savedAsset.verticalId,
+          prod_image_width: savedAsset.prod_image_width,  
+          prod_image_height: savedAsset.prod_image_height,
         });
       } catch (error: any) {
         reject(error);
@@ -79,6 +83,8 @@ class AssetService {
             figmaId: asset.figmaId,
             templateId: asset.templateId,
             verticalId: asset.verticalId,
+            prod_image_width: asset.prod_image_width,  
+            prod_image_height: asset.prod_image_height,
           }))
         );
         const count = assets.length;

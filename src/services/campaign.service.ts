@@ -3,46 +3,55 @@ import { sequelize } from '../config/database';
 import CampaignDAO from '../daos/campaign.dao';
 import TemplateDAO from '../daos/template.dao';
 import AssetDAO from '../daos/asset.dao';
+import VerticalDAO from '../daos/vertical.dao'
 import { Campaign } from '../models/campaign';
 import { Template } from '../models/template';
-import figmaService from './figma.service';
+import SearchService from './search.service'
+import { CampaignDocument } from '../interfaces/search.interface';
 import { CampaignIn, CampaignCreateOut, CampaignListOut, CampaignGetOut } from '../interfaces/campaign.interface';
 import fs from 'fs/promises';
 import s3Service from './s3.service';
+import FigmaClient from '../clients/figma.client';
 import createLogger from '../config/logger';
 import path from 'path';
 
 const logger = createLogger(module);
-
 class CampaignService {
-  // Create a campaign
-  public create(data: CampaignIn): Promise<CampaignCreateOut> {
+
+  public create(campaignInput: CampaignIn): Promise<CampaignCreateOut> {
     return new Promise(async (resolve, reject) => {
       const transaction = await sequelize.transaction();
       try {
-        logger.debug(`Attempting to create campaign: ${data.campaignname}`);
+        logger.debug(`Service: Creating campaign '${campaignInput.campaignname}'`);
 
-        const [template, originalAssets] = await Promise.all([
-          TemplateDAO.findById(data.templateId),
-          AssetDAO.list({ where: { assetId: data.assets } }),
+        // --- Step 1: Validation ---
+        if (!campaignInput.campaignname || campaignInput.campaignname.trim() === '') {
+          await transaction.rollback();
+          return reject(new Error("Validation failed: campaignname is required and cannot be empty."));
+        }
+        const [template, originalAssets, vertical] = await Promise.all([
+          TemplateDAO.findById(campaignInput.templateId),
+          AssetDAO.list({ where: { assetId: campaignInput.assets } }),
+          VerticalDAO.findById(campaignInput.verticalId)
         ]);
-
         if (!template) {
           await transaction.rollback();
-          return reject(new Error(`Template with ID '${data.templateId}' does not exist.`));
+          return reject(new Error(`Template with ID '${campaignInput.templateId}' does not exist.`));
         }
-        if (template.verticalId !== data.verticalId) {
+        if (!vertical) {
           await transaction.rollback();
-          return reject(new Error(`Template '${data.templateId}' does not belong to Vertical '${data.verticalId}'.`));
+          return reject(new Error(`Vertical with ID '${campaignInput.verticalId}' does not exist.`));
+        }
+        if (template.verticalId !== campaignInput.verticalId) {
+          await transaction.rollback();
+          return reject(new Error(`Template with ID '${campaignInput.templateId}' does not belong to Vertical '${campaignInput.verticalId}'.`));
+        }
+        if (originalAssets.length !== campaignInput.assets.length) {
+          await transaction.rollback();
+          return reject(new Error("One or more provided asset IDs do not exist."));
         }
 
-        const foundAssetIds = originalAssets.map(a => a.assetId);
-        const missingAssetIds = data.assets.filter(id => !foundAssetIds.includes(id));
-        if (missingAssetIds.length > 0) {
-          await transaction.rollback();
-          return reject(new Error(`These asset IDs do not exist: ${missingAssetIds.join(', ')}.`));
-        }
-
+        // Validate all assets have a figmaId
         for (const asset of originalAssets) {
           if (!asset.figmaId) {
             await transaction.rollback();
@@ -50,52 +59,98 @@ class CampaignService {
           }
         }
 
+        // --- Step 2: Main Logic ---
         const campaignData: CreationAttributes<Campaign> = {
-          campaignName: data.campaignname,
-          description: data.description,
-          fromDate: new Date(data.fromdate),
-          toDate: new Date(data.todate),
+          campaignName: campaignInput.campaignname,
+          description: campaignInput.description,
+          fromDate: new Date(campaignInput.fromdate),
+          toDate: new Date(campaignInput.todate),
           templateId: template.templateId,
           verticalId: template.verticalId,
           status: 'draft',
+          createdBy: campaignInput.createdByUserID,
         };
-
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
-
-        // Clone assets in Figma
-        const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
-        const clonedFigmaIds = await Promise.all(clonePromises);
-
+        // const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
+        // const clonedFigmaIds = await Promise.all(clonePromises);
+        //const clonePromises = originalAssets.map(asset => FigmaClient.cloneFile(asset.figmaId!));
+        //const clonedFigmaIds = await Promise.all(clonePromises);
+        const clonePromises = originalAssets.map(asset => 
+          FigmaClient.cloneFile(asset.figmaId!, newCampaign.campaignId, asset.assetId)
+      );
+      const clonedFigmaIds = await Promise.all(clonePromises);
         const campaignAssetsToCreate = originalAssets.map((asset, index) => ({
           campaignId: newCampaign.campaignId,
           assetId: asset.assetId,
           assetName: asset.assetName,
           clonedFigmaId: clonedFigmaIds[index].clonedFileId,
         }));
-
+        //const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
         const createdAssets = await CampaignDAO.bulkCreateCampaignAssets(campaignAssetsToCreate, transaction);
 
-        await transaction.commit();
-        logger.info(`Campaign created successfully: ${newCampaign.campaignName} (ID: ${newCampaign.campaignId})`);
+        logger.info(`Service: Triggering export for ${createdAssets.length} assets...`);
 
-        resolve({
-          campaignId: newCampaign.campaignId,
-          campaignname: newCampaign.campaignName,
-          description: newCampaign.description,
-          fromdate: newCampaign.fromDate,
-          todate: newCampaign.toDate,
-          verticalId: newCampaign.verticalId,
-          templateId: newCampaign.templateId,
-          assets: createdAssets.map(asset => asset.assetId),
-        });
+        // const exportPromises = createdAssets.map(asset => 
+        //     FigmaClient.exportAssetImage(asset.campaignId, asset.assetId)
+        // );
+        // await Promise.all(exportPromises);
+
+        await transaction.commit();
+        logger.info(`Service: Campaign created successfully (ID: ${newCampaign.campaignId})`);
+        // --- Step 3: Data Enrichment & Background Indexing ---
+        try {
+            const campaignDocForSearch: CampaignDocument = {
+                campaignId: newCampaign.campaignId,
+                campaignname: newCampaign.campaignName,
+                description: newCampaign.description,
+                status: newCampaign.status,
+                fromdate: newCampaign.fromDate,
+                todate: newCampaign.toDate,
+                verticalId: newCampaign.verticalId,
+                templateId: newCampaign.templateId,
+                assets: createdAssets.map(a => a.assetId),
+                createdAt: newCampaign.createdAt,
+                verticalName: vertical.verticalName,
+                templateName: template.templateName,
+                createdByuserId: newCampaign.createdBy!,
+                createdByName: campaignInput.createdByName,
+            };
+            await SearchService.addCampaignToIndex(campaignDocForSearch);
+        } catch (searchError) {
+            logger.error(`Failed to index campaign ${newCampaign.campaignId} after creation:`, searchError);
+        }
+        
+        // --- Step 4: Format and Resolve with LEAN Output ---
+        const campaignOut: CampaignCreateOut = {
+            campaignId: newCampaign.campaignId,
+            campaignname: newCampaign.campaignName,
+            description: newCampaign.description,
+            fromdate: newCampaign.fromDate,
+            todate: newCampaign.toDate,
+            verticalId: newCampaign.verticalId,
+            templateId: newCampaign.templateId,
+            assets: createdAssets.map(asset => asset.assetId),
+            createdByUserID: newCampaign.createdBy as number,
+            createdAt: newCampaign.createdAt.toISOString(),
+        };
+        return resolve(campaignOut);
+
       } catch (error: any) {
         await transaction.rollback();
-        reject(error);
+        
+        // Handle unique constraint violation for campaign name
+        if (error.name === 'SequelizeUniqueConstraintError' && error.errors) {
+          const uniqueError = error.errors.find((err: any) => err.path === 'campaignName');
+          if (uniqueError) {
+            return reject(new Error(`A campaign with the name '${campaignInput.campaignname}' already exists.`));
+          }
+        }
+        
+        return reject(error);
       }
     });
   }
 
-  // List campaigns
   public list(filters: any): Promise<CampaignListOut[]> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -132,6 +187,8 @@ class CampaignService {
             status: c.status,
             verticalId: c.verticalId,
             templateId: c.templateId,
+            createdBy: c.createdBy ?? null,
+            createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
           }))
         );
       } catch (error: any) {
@@ -140,34 +197,42 @@ class CampaignService {
     });
   }
 
-  // Get campaign by ID
   public getById(campaignId: number): Promise<CampaignGetOut> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        logger.debug(`Attempting to fetch campaign by ID: ${campaignId}`);
+  return new Promise(async (resolve, reject) => {
+    try {
+      logger.debug(`Service: Attempting to fetch campaign by ID: ${campaignId}`);
 
-        const campaign = await CampaignDAO.findById(campaignId);
-        
-        if (!campaign) return reject(new Error('Campaign not found'));
-        
-        resolve({
-          campaignId: campaign.campaignId,
-          campaignname: campaign.campaignName,
-          description: campaign.description,
-          status: campaign.status,
-          fromdate: campaign.fromDate,
-          todate: campaign.toDate,
-          verticalId: campaign.verticalId,
-          templateId: campaign.templateId,
-          assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
-        });
-      } catch (error: any) {
+      const campaign = await CampaignDAO.findById(campaignId);
+      
+      if (!campaign) {
+        return reject(new Error('Campaign not found'));
       }
-      logger.info(`Fetched campaign by ID: ${campaignId}`);
-    });
+      
+      const campaignOut: CampaignGetOut = {
+        campaignId: campaign.campaignId,
+        campaignname: campaign.campaignName,
+        description: campaign.description,
+        status: campaign.status,
+        fromdate: campaign.fromDate,
+        todate: campaign.toDate,
+        verticalId: campaign.verticalId,
+        templateId: campaign.templateId,
+        assets: campaign.assets ? campaign.assets.map(asset => asset.assetId) : [],
+        createdByUserID: campaign.createdBy ?? null,
+        createdAt: campaign.createdAt.toISOString(),
+      };
+
+      logger.info(`Service: Fetched campaign by ID: ${campaignId}`);
+      return resolve(campaignOut);
+      
+    } catch (error: any) {
+      logger.error(`Service Error fetching campaign by ID ${campaignId}: ${error.message}`);
+      return reject(error);
+    }
+  });
   }
 
-public async uploadImage(
+  public async uploadImage(
   campaignId: number,
   file: Express.Multer.File
 ): Promise<{ campaignId: number; filename: string; s3Key: string }> {
@@ -202,9 +267,9 @@ public async uploadImage(
     const message = err instanceof Error ? err.message : 'Failed to upload image';
     return Promise.reject(new Error(message));
   }
-}
+  } 
 
-public async uploadCSV(
+  public async uploadCSV(
   campaignId: number,
   file: Express.Multer.File
 ): Promise<{ campaignId: number; filename: string; s3Key: string }> {
@@ -239,12 +304,12 @@ public async uploadCSV(
     const message = err instanceof Error ? err.message : 'Failed to upload CSV';
     return Promise.reject(new Error(message));
   }
-}
+  }
 
-public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
+  public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
   const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) {
-    throw new Error('S3_BUCKET_NAME is not defined in environment variables');
+    throw new Error('IMAGE_BUCKET is not defined in environment variables');
   }
   try {
     const objects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
@@ -256,7 +321,7 @@ public async getCampaignImage(s3Prefix: string): Promise<Buffer> {
     const message = err instanceof Error ? err.message : 'Failed to retrieve image';
     throw new Error(message);
   }
-}
+  }
 
 public async uploadExportedImages(
   campaignId: number,
@@ -403,7 +468,4 @@ public async getAssetImage(
   }
 }
 }
-
 export default new CampaignService();
-
-

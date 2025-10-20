@@ -91,5 +91,4 @@ class ImageGenRequestDAO {
     };
   }
 }
-
 export default new ImageGenRequestDAO();
