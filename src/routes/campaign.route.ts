@@ -11,8 +11,7 @@ const logger = createLogger(module);
 const router = Router();
 const upload = multer();
 
-// Common MAX_FILE_SIZE for images and CSVs
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
 const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
@@ -98,9 +97,9 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
 router.get('/:campaignId/get', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const campaignId = Number(req.params.campaignId);
-    if (isNaN(campaignId)) {
-      logger.error('A valid numeric campaignId is required.');
-      return res.status(400).json({ message: 'A valid numeric campaignId is required.' });
+
+    if (Number.isNaN(campaignId)) {
+      return res.status(400).json({ message: 'Invalid campaignId' });
     }
 
     const campaign = await CampaignService.getById(campaignId);
@@ -163,24 +162,32 @@ router.post('/csv/upload', csvUpload.array('csv'), async (req: Request, res: Res
 });
 
 /* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+
 router.get('/:campaignId/images/:imageName', async (req, res) => {
+  const { campaignId, imageName } = req.params;
+  
+  if (!campaignId || !imageName) {
+    return res.status(400).json({
+      error: 'campaignId and imageName are required parameters.'
+    });
+  }
+
+  const ext = path.extname(imageName).toLowerCase();
+  let contentType = '';
+
+  if (ext === '.png') {
+    contentType = 'image/png';
+  } else if (ext === '.jpg' || ext === '.jpeg') {
+    contentType = 'image/jpeg';
+  } else {
+    return res.status(400).json({
+      error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.'
+    });
+  }
+
+  const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
   try {
-    const { campaignId, imageName } = req.params;
-    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
-
     const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
-
-    const ext = path.extname(imageName).toLowerCase();
-    let contentType = '';
-
-    if (ext === '.png') {
-      contentType = 'image/png';
-    } else if (ext === '.jpg' || ext === '.jpeg') {
-      contentType = 'image/jpeg';
-    } else {
-      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
-    }
-
     res.setHeader('Content-Type', contentType);
     res.send(imageBuffer);
   } catch (error: any) {
@@ -190,15 +197,29 @@ router.get('/:campaignId/images/:imageName', async (req, res) => {
 
 router.post(
   '/image/exported/upload',
-  imageUpload.array('images'), // <- must match files[] in form-data
+  imageUpload.array('images'),
   async (req: Request, res: Response) => {
     const { campaignId, requestId } = req.body;
-    const files = req.files as Express.Multer.File[]; // array
+    const files = req.files as Express.Multer.File[];
+
+    const numericCampaignId = Number(campaignId);
+    const numericRequestId = Number(requestId);
+
+    if (
+      isNaN(numericCampaignId) ||
+      isNaN(numericRequestId) ||
+      !Array.isArray(files) ||
+      files.length === 0
+    ) {
+      return res.status(400).json({
+        error: 'Invalid input. Please provide valid campaignId, requestId, and at least one image file.',
+      });
+    }
 
     try {
       const results = await CampaignService.uploadExportedImages(
-        Number(campaignId),
-        Number(requestId),
+        numericCampaignId,
+        numericRequestId,
         files
       );
       res.status(200).json(results);
@@ -231,47 +252,6 @@ router.get(
   }
 );
 
-
-/* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
-// router.post(
-//   '/image/asset/upload',
-//   imageUpload.single('image'),
-//   async (req: Request, res: Response) => {
-//     const { campaignId, assetId, requestId } = req.body;
-//     const file = req.file;
-
-//     if (!campaignId || !assetId || !requestId) {
-//       logger.error('campaignId, assetId, and requestId are required');
-//       return res.status(400).json({ message: 'campaignId, assetId, and requestId are required' });
-//     }
-
-//     if (!file) {
-//       logger.error('Image file missing');
-//       return res.status(400).json({ message: 'Image file is required' });
-//     }
-
-//     try {
-//       const result = await CampaignService.uploadAssetImage(
-//         Number(campaignId),
-//         Number(assetId),
-//         Number(requestId),
-//         file
-//       );
-
-//       res.status(200).json({
-//         message: 'Asset image uploaded successfully',
-//         ...result,
-//       });
-//     } catch (err: unknown) {
-//       const message = err instanceof Error ? err.message : 'Internal Server Error';
-//       logger.error(message);
-//       res.status(500).json({ error: message });
-//     }
-//   }
-// );
-
-
-// Upload Asset Image
 router.post(
   '/image/asset/upload',
   imageUpload.single('image'),
@@ -311,10 +291,9 @@ router.get('/:campaignId/asset/:assetId', async (req: Request, res: Response) =>
     const cId = Number(campaignId);
     const aId = Number(assetId);
 
-    if (isNaN(cId) || isNaN(aId)) {
+    if (Number.isNaN(cId) || Number.isNaN(aId)) {
       return res.status(400).json({ error: 'campaignId and assetId must be valid numbers' });
     }
-
     const { buffer, contentType } = await CampaignService.getAssetImage(cId, aId);
 
     res.setHeader('Content-Type', contentType);

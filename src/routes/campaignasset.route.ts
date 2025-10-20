@@ -9,7 +9,7 @@ router.get('/:campaignId/:assetId/get', async (req: Request, res: Response) => {
   const campaignId = Number(req.params.campaignId);
   const assetId = Number(req.params.assetId);
 
-  if (isNaN(campaignId) || isNaN(assetId)) {
+  if (Number.isNaN(campaignId) || Number.isNaN(assetId)) {
     logger.error('Valid numeric campaignId and assetId are required.');
     return res.status(400).json({ message: 'Valid campaignId and assetId are required.' });
   }
