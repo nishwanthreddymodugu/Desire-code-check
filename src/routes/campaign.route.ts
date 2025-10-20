@@ -284,6 +284,7 @@ router.post(
     }
   }
 );
+
 //To get image by assetId
 router.get('/:campaignId/asset/:assetId', async (req: Request, res: Response) => {
   try {
