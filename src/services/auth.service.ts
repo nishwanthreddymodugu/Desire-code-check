@@ -2,9 +2,7 @@ import bcrypt from "bcryptjs";
 import createlogger from "../config/logger";
 import UserDAO from "../daos/user.dao";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/JWT";
-import { IUser } from "../interfaces/user.interface";
-import { User } from "../models/user";
-import { CreationAttributes } from "sequelize";
+import { IUser, IUserCreate } from "../interfaces/user.interface";
 
 const logger = createlogger(module);
 class AuthService {
@@ -22,10 +20,10 @@ class AuthService {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        const dataToCreate: IUser = { 
+        const dataToCreate: IUserCreate = { 
           name, 
           email, 
-          password: hashedPassword, 
+          hash: hashedPassword, 
           mobile: mobile 
         };
         const newUser = await UserDAO.create(dataToCreate);
@@ -49,7 +47,7 @@ class AuthService {
             const { email, password } = loginData;
 
             const user = await UserDAO.findByEmail(email);
-            if (!user || !(await bcrypt.compare(password, user.password))) {
+            if (!user || !(await bcrypt.compare(password, user.hash))) {
               return reject(new Error("Invalid email or password"));
             }
 

@@ -7,10 +7,6 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { getUser } from '../utils/auth';
-// import { authMiddleware } from '../middlewares/auth.middleware';
-// interface AuthRequest extends Request {
-//   user?: IUser;
-// }
 import campaignService from '../services/campaign.service';
 
 const logger = createLogger(module);
@@ -18,7 +14,7 @@ const CampaignRouter = Router();
 const upload = multer();
 
 // Common MAX_FILE_SIZE for images and CSVs
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
 const imageUploadDir = path.join(process.cwd(), 'uploads', 'images-for-campaigns');
@@ -61,14 +57,10 @@ const csvUpload = multer({
   },
 });
 CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+
     const user = getUser(req); 
     const { campaignname, description, fromdate, todate, verticalId, templateId, assets } = req.body;
-   // const user = (req as AuthRequest).user;
-    //const user = (req as any).user;
-    // if (!user || !user.id || !user.name) {
-    //     return res.status(401).json({ message: "User information is missing or incomplete in the token." });
-    // }
+   
     if (!campaignname || !verticalId || !templateId || !assets) {
       return res.status(400).json({ 
         error: "Bad Request",
@@ -78,7 +70,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response, next: NextFun
     if (!Array.isArray(assets) || assets.length === 0) {
       return res.status(400).json({ message: "'assets' array cannot be empty." });
     }
-
+    try{
     const campaignIn: CampaignIn = {
       campaignname,
       description,

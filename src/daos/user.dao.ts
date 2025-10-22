@@ -1,8 +1,8 @@
 import { User } from '../models/user';
-import { IUser } from '../interfaces/user.interface';
+import { IUserCreate } from '../interfaces/user.interface';
 
 class UserDAO {
-  async create(userData: IUser): Promise<User> {
+  async create(userData: IUserCreate): Promise<User> {
     return User.create(userData);
   }
 
@@ -19,6 +19,7 @@ class UserDAO {
   }
 
   async saveRefreshToken(userId: number, refreshToken: string): Promise<void> {
+  
     await User.update({ refreshToken }, { where: { userId: userId } });
   }
 }
