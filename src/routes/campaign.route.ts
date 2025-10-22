@@ -72,7 +72,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response) => {
     if (!Array.isArray(assets) || assets.length === 0) {
       return res.status(400).json({ message: "'assets' array cannot be empty." });
     }
-    try{
+
     const campaignIn: CampaignIn = {
       campaignname,
       description,
@@ -87,6 +87,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response) => {
 
     const campaignOut = await CampaignService.create(campaignIn);
     res.status(201).json(campaignOut);
+
   } catch (error: any) {
     logger.error(`Route Error in /campaigns/create: ${error.message}`);
     const message = error.message || 'Internal Server Error';
@@ -99,6 +100,8 @@ CampaignRouter.post('/create', async (req: Request, res: Response) => {
     res.status(status).json({ message });
   }
 });
+
+
 
 /* ---------------- LIST CAMPAIGNS ---------------- */
 CampaignRouter.get('/list', async (req: Request, res: Response) => {
@@ -261,6 +264,7 @@ CampaignRouter.get('/:campaignId/asset/:assetId', async (req, res) => {
     res.status(/not found/i.test(error.message) ? 404 : 500).json({ error: error.message });
   }
 });
+
 
 export default CampaignRouter;
 
