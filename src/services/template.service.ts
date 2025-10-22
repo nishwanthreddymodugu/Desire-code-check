@@ -9,6 +9,7 @@ import s3Service from './s3.service';
 
 const logger = createLogger(module);
 
+
 class TemplateService {
   public save(data: TemplateIn): Promise<TemplateOut> {
     return new Promise(async (resolve, reject) => {
@@ -162,7 +163,91 @@ class TemplateService {
       return Promise.reject(new Error(message));
     }
   }
+  public async listImages(
+  verticalId: number,
+  templateId: number
+): Promise<{ filename: string; path: string }[]> {
+  const bucket = process.env.IMAGE_BUCKET;
+  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+
+  const prefix = `verticals/${verticalId}/templates/${templateId}/`;
+
+  // Assuming your s3Service.listObjects() returns an array of string keys
+  const objectKeys: string[] = await s3Service.listObjects(bucket, prefix);
+
+  if (!objectKeys || objectKeys.length === 0) {
+    return [];
+  }
+
+  // Just return the key and filename (no signed URL, since you don't want to change s3Service)
+  return objectKeys.map(key => ({
+    filename: key.split('/').pop() || '',
+    path: key, // full S3 path
+  }));
 }
 
+// Get a single image by name (compatible with your existing s3Service)
+public async getImage(verticalId: number, templateId: number, imageName: string) {
+  const bucket = process.env.IMAGE_BUCKET;
+  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
+  const s3Key = `verticals/${verticalId}/templates/${templateId}/${imageName}`;
+
+  try {
+    // Use imported s3Service directly
+    const objects = await s3Service.getObjectsByPrefix(bucket, s3Key);
+
+    if (!objects || objects.length === 0) {
+      throw new Error(`Image '${imageName}' not found in S3.`);
+    }
+
+    return objects[0].body;
+  } catch (error) {
+    throw new Error(`Failed to fetch image: ${(error as Error).message}`);
+  }
+}
+
+public async deleteImage(
+  verticalId: number,
+  templateId: number,
+  imageName: string
+): Promise<void> {
+  const bucket = process.env.IMAGE_BUCKET;
+  if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
+
+  const s3Key = `verticals/${verticalId}/templates/${templateId}/${imageName}`;
+
+  try {
+    // Check if image exists using existing s3Service
+    const objects = await s3Service.getObjectsByPrefix(bucket, s3Key);
+    if (!objects || objects.length === 0) {
+      throw new Error(`Image '${imageName}' not found in S3.`);
+    }
+
+    // Use S3 client for deletion (with LocalStack endpoint and path style)
+    const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+    const client = new S3Client({
+      region: process.env.AWS_REGION,
+      endpoint: process.env.AWS_S3_ENDPOINT, // LocalStack endpoint
+      forcePathStyle: process.env.AWS_S3_FORCE_PATH_STYLE?.toLowerCase() === 'true',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+      },
+    });
+
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: s3Key,
+      })
+    );
+
+    logger.info(`Deleted image '${imageName}' from S3 successfully.`);
+  } catch (error) {
+    logger.error(`Failed to delete image '${imageName}': ${(error as Error).message}`);
+    throw new Error(`Failed to delete image: ${(error as Error).message}`);
+  }
+}
+}
 export default new TemplateService();
