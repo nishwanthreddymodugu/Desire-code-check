@@ -5,6 +5,7 @@ import { Asset } from '../models/asset';
 import createLogger from '../config/logger';
 import { Vertical } from '../models/vertical';
 import { Template } from '../models/template';
+import { User } from '../models/user';
 const logger = createLogger(module);
 
 class CampaignDAO {
@@ -55,7 +56,7 @@ class CampaignDAO {
     public async findAllForIndexing(options: FindOptions): Promise<Campaign[]> {
         return Campaign.findAll({
             ...options,
-            include: [Vertical, Template, Asset]
+            include: [Vertical, Template, Asset,{ model: User, as: 'creator' }]
         });
     }
 }
