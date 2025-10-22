@@ -12,6 +12,65 @@ export interface CampaignDocument {
     templateName: string;
     createdBy?: string | null;
     createdAt: string | Date;
-    createdByuserId: number; // The ID of the user who created it
-    createdByName: string; // The name of the user for searching
+    createdByuserId: number; 
+    createdByName: string; 
+}
+export interface StatusAggregation { [status: string]: number; }
+export interface MonthlyAggregation { [month: string]: number; }
+export interface VerticalAggregation { [verticalName: string]: number; }
+
+
+export interface SearchResult {
+
+    total_campaigns: number;
+
+    campaigns: CampaignDocument[];
+
+    aggregations: {
+
+        campaigns_by_status: StatusAggregation;
+
+        campaigns_by_month: MonthlyAggregation;
+
+        campaigns_by_vertical: VerticalAggregation;
+
+        total_assets: number;
+
+    };
+
+}
+export interface SearchQuery {
+
+    q?: string;
+
+    status?: string;
+
+    createdBy?: string;
+
+    createdAtFrom?: string;
+
+    createdAtTo?: string;
+
+    fromdate?: string;
+
+    todate?: string;
+
+    verticalId?: number;
+
+    templateId?: number;
+
+    month?: string;
+
+}
+export interface SearchResponse {
+
+    total_campaigns: number;
+    campaigns: CampaignDocument[];
+  
+    aggregations: {
+        campaigns_by_status: StatusAggregation;
+        campaigns_by_month: MonthlyAggregation;
+        campaigns_by_vertical: VerticalAggregation;
+        total_assets: number;
+    };
 }

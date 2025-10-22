@@ -12,6 +12,7 @@ const logger = createLogger(module);
 const CampaignRouter = Router();
 const upload = multer();
 
+// Common MAX_FILE_SIZE for images and CSVs
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
@@ -71,7 +72,7 @@ CampaignRouter.post('/create', async (req: Request, res: Response) => {
     if (!Array.isArray(assets) || assets.length === 0) {
       return res.status(400).json({ message: "'assets' array cannot be empty." });
     }
-
+    try{
     const campaignIn: CampaignIn = {
       campaignname,
       description,

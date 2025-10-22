@@ -10,10 +10,9 @@ const FIGMA_API_URL = process.env.FIGMA_API_URL;
 if (!FIGMA_API_URL) {
     throw new Error("CRITICAL ERROR: FIGMA_API_URL is not defined in the .env file.");
 }
-
 class FigmaClient {
     /**
-     * Sends an original Figma ID and its parent campaignId to the service to be cloned.
+     * Sends an original Figma ID and its parent campaign/asset IDs to the service to be cloned.
      * @param originalFigmaId The ID of the master Figma file.
      * @param campaignId The ID of the campaign this clone will belong to.
      * @param assetId The ID of the asset this clone will belong to.
@@ -36,33 +35,40 @@ class FigmaClient {
 
             logger.info(`[FigmaClient] Received successful clone response for ${originalFigmaId}.`);
             
-            //const cloneFileId = response.data.cloned;
-            const clonedFileId = response.data?.clonedDetails?.clonedFileId;
-            const uploadDetailsError = response.data?.UploadDetails?.Error;
-            if(uploadDetailsError){
-                logger.error(`[FigmaClient] Upload details indicate an error:`, uploadDetailsError);
+        const uploadError = response.data?.UploadDetails?.Error; // Checks for 'UploadDetails' (uppercase U)
+            const uploadError2 = response.data?.uploadDetails?.Error; // Checks for 'uploadDetails' (lowercase u)
+            const clonedError = response.data?.clonedDetails?.Error; // Checks for error in 'clonedDetails'
+            
+            if (uploadError || uploadError2 || clonedError) {
+                const errorMessage = uploadError || uploadError2 || clonedError;
+                logger.error(`[FigmaClient] Flask server returned a 200 OK but contained an internal error:`, { error: errorMessage });
+                throw new Error(`The Figma service failed during its internal process: ${errorMessage}`);
             }
-            console.log('Clone response data:', response.data);
-            const uploadError = response.data?.UploadDetails?.Error;
-            console.log('Upload error from response:', uploadError);
-            if (uploadError) {
-                logger.error(`[FigmaClient] Flask server returned a 200 OK but contained an S3 upload error:`, uploadError);
-                throw new Error('The Figma service failed during the S3 upload phase.');
-            }
-            if (!clonedFileId) {
-                throw new Error("Figma API response did not contain a 'clonedFileId'.");
-            }
-            return { clonedFileId: clonedFileId };
 
-        } catch (error: any) {
-            logger.error(`[FigmaClient] Error calling Figma clone API: ${error.message}`);
-            if (axios.isAxiosError(error) && error.response) {
-                logger.error('Figma API Response Error Body:', error.response.data);
+            const clonedFileId = response.data?.clonedDetails?.cloneFileId;
+            if (!clonedFileId) {
+                throw new Error("Figma API response was successful but did not contain the expected 'clonedDetails.cloneFileId' property.");
             }
+            
+            return { clonedFileId: clonedFileId };
+            // ----------------------------------------------------
+
+        } catch (error: unknown) { // Use 'unknown' for type safety
+            
+            if (axios.isAxiosError(error)) {
+                logger.error('[FigmaClient] Axios error calling Figma clone API:', { 
+                    message: error.message,
+                    responseData: error.response?.data 
+                });
+            } else if (error instanceof Error) {
+                logger.error('[FigmaClient] Generic error calling Figma clone API:', { stack: error.stack });
+            } else {
+                logger.error('[FigmaClient] Unknown error calling Figma clone API:', { error });
+            }
+            
             throw new Error('Failed to clone asset with Figma API.');
         }
     }
-
 }
 
 export default new FigmaClient();

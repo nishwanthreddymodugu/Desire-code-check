@@ -3,6 +3,7 @@ import AuthService from '../auth.service';
 import UserDAO from '../../daos/user.dao';
 import { User } from '../../models/user';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/JWT';
+import { IUser } from '../../interfaces/user.interface';
 
 // --- Mock Setup ---
 // We mock all the external dependencies the service relies on.
@@ -87,12 +88,13 @@ describe('AuthService', () => {
       // ARRANGE
       const mockUser = {
         userId: 1,
+        name: 'Test User',
         email: 'test@example.com',
         password: 'hashed_password'
-      } as User;
+      } as IUser;
       const loginData = { email: 'test@example.com', password: 'password123' };
 
-      mockedUserDAO.findByEmail.mockResolvedValue(mockUser);
+      mockedUserDAO.findByEmail.mockResolvedValue(mockUser as User);
       // @ts-expect-error: Type mismatch due to bcrypt mock typing
       mockedBcrypt.compare.mockResolvedValue(Promise.resolve(true)); // Simulate correct password
       mockedSignAccessToken.mockReturnValue('new-access-token');

@@ -16,7 +16,7 @@ router.use('/assets', authMiddleware, assetRoutes);
 router.use('/campaigns', authMiddleware,campaignRoutes);
 router.use('/search', authMiddleware, searchRoutes);
 router.use('/auth', authRouter);
-router.use('/campaignassets', campaignAssetRoutes);
+router.use('/campaignassets', authMiddleware, campaignAssetRoutes);
 router.use('/campaign',authMiddleware, imageGenRoutes);
 
 export default router;
