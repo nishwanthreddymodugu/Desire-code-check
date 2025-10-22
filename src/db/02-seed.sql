@@ -2,8 +2,8 @@
 --                              USERS
 -- =================================================================
 -- Inserting a sample user to own the campaigns
-INSERT INTO "users" ("name", "email", "password")
-VALUES ('Satyam Kumar', 'satyam@example.com', '$2a$10$fow.E.qOCi9/6.i6.c.27u/vS4.jV.g/uS5.a.w/s.jH.x.y.z'); -- Example hashed password
+INSERT INTO "users" ("name", "email", "hash")
+VALUES ('Satyam Kumar', 'satyam@gmail.com', 'a'); 
 
 -- Inserting rows into verticals
 INSERT INTO "verticals" ("verticalName")
@@ -38,9 +38,9 @@ INSERT INTO "campaigns" ("campaignName", "description", "fromDate", "toDate", "s
 VALUES
   ('Campaign 1', 'Campaign description 1', '2025-09-01', '2025-09-30', 'active', 1, 1, 1),
   ('Campaign 2', 'Campaign description 2', '2025-10-01', '2025-10-31', 'active', 1, 2, 1),
-  ('Campaign 3', 'Campaign description 3', '2025-11-01', '2025-11-30', 'inactive', 2, 3, 1),
+  ('Campaign 3', 'Campaign description 3', '2025-11-01', '2025-11-30', 'pending', 2, 3, 1),
   ('Campaign 4', 'Campaign description 4', '2025-12-01', '2025-12-31', 'active', 2, 4, 1),
-  ('Campaign 5', 'Campaign description 5', '2026-01-01', '2026-01-31', 'inactive', 3, 5, 1);
+  ('Campaign 5', 'Campaign description 5', '2026-01-01', '2026-01-31', 'draft', 3, 5, 1);
 -- --------------------
 -- Inserting rows into campaignassets
 INSERT INTO "campaignassets" ("campaignId", "assetId", "assetname", "clonedFigmaId", "prod_image_width", "prod_image_height")

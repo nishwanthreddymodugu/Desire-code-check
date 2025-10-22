@@ -14,7 +14,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare email: string;
 
   @AllowNull(false) @Column({ type: DataType.STRING(255) })
-  declare password: string;
+  declare hash: string;
 
   @AllowNull(true)
   @Unique

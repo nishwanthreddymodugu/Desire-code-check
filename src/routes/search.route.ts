@@ -1,26 +1,27 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import SearchService from '../services/search.service';
-import { CampaignDocument } from '../interfaces/search.interface';
+import { CampaignDocument, SearchQuery } from '../interfaces/search.interface';
 import createLogger from '../config/logger';
 
 const logger = createLogger(module);
 
 const SearchRouter = Router();
 
+const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+const dateFormatError = "Invalid date format. Please use YYYY-MM-DD.";
 
 SearchRouter.post('/campaign/index/create', async (req: Request, res: Response, next: NextFunction) => {
     try {
         await SearchService.createCampaignIndex();
         res.status(200).json({ message: "Campaign search index created successfully." });
-    } catch (error: any) {
-        logger.error(`Route Error in /campaign/index/create: ${error.message}`);
-        let status = 500;
-        const message = error.message || 'Internal Server Error';
-        
-        // Check for specific error types
-        if (message.includes('Failed to create campaign index')) status = 500;
-        
-        res.status(status).json({ message });
+    } catch (error: unknown) {
+        if (typeof error === 'object' && error !== null && 'status' in error && 'message' in error) {
+            const err = error as { status: number; message: string };
+            logger.error(`Route Error in /campaign/index/create: ${err.message}`);
+            return res.status(err.status).json({ message: err.message });
+        }
+        logger.error('Route Error in /campaign/index/create:', { error });
+        res.status(500).json({ message: 'An unexpected error occurred.' });
     }
 });
 
@@ -30,54 +31,83 @@ SearchRouter.post('/campaign/add', async (req: Request, res: Response, next: Nex
         if (!campaignDoc.campaignId || !campaignDoc.campaignname) {
             return res.status(400).json({ message: "campaignId and campaignname are required."});
         }
-        // TypeScript fix: add type assertion for req.user
         const user = (req as any).user;
         if (!user || !user.name) {
             return res.status(401).json({ message: "User information is missing from the token." });
         }
         await SearchService.addCampaignToIndex(campaignDoc);
         res.status(200).json({ message: `Campaign ${campaignDoc.campaignId} indexed successfully.` });
-    } catch (error: any) {
-        logger.error(`Route Error in /campaign/add: ${error.message}`);
-        let status = 500;
-        const message = error.message || 'Internal Server Error';
+    } catch (error: unknown) {
         
-        // Check for specific error types
-        if (message.includes('Failed to add campaign to index')) status = 500;
-        
-        res.status(status).json({ message });
+        if (typeof error === 'object' && error !== null && 'status' in error && 'message' in error) {
+            const err = error as { status: number; message: string };
+            logger.error(`Route Error in /campaign/add: ${err.message}`);
+            return res.status(err.status).json({ message: err.message });
+        }
+        logger.error('Route Error in /campaign/add:', { error });
+        res.status(500).json({ message: 'An unexpected error occurred.' });
     }
 });
 
 SearchRouter.get('/campaign/search', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Basic input validation before delegating to the service
-        const { verticalId, fromdate, todate } = req.query as Record<string, any>;
-        if (verticalId !== undefined && !Number.isFinite(Number(verticalId))) {
-            return res.status(400).json({ message: "'verticalId' must be a number." });
-        }
-        if (fromdate !== undefined && isNaN(new Date(fromdate).getTime())) {
-            return res.status(400).json({ message: "'fromdate' is not a valid date." });
-        }
-        if (todate !== undefined && isNaN(new Date(todate).getTime())) {
-            return res.status(400).json({ message: "'todate' is not a valid date." });
-        }
-        if (fromdate && todate && new Date(fromdate) > new Date(todate)) {
-            return res.status(400).json({ message: "'fromdate' cannot be later than 'todate'." });
-        }
+        const query = req.query;
 
-        const results = await SearchService.search(req.query);
+        const filters: SearchQuery = {};
+        if (query.q) filters.q = query.q as string;
+        if (query.status) filters.status = query.status as string;
+        if (query.createdBy) filters.createdBy = query.createdBy as string;
+        if (query.createdAtFrom) filters.createdAtFrom = query.createdAtFrom as string;
+        if (query.createdAtTo) filters.createdAtTo = query.createdAtTo as string;
+
+        if (query.fromdate) {
+            const fromdate = query.fromdate as string;
+            
+            if (!dateRegex.test(fromdate) || isNaN(new Date(fromdate).getTime())) {
+                return res.status(400).json({ message: dateFormatError });
+            }
+            filters.fromdate = fromdate;
+        }
+        if (query.todate) {
+            const todate = query.todate as string;
+         
+            if (!dateRegex.test(todate) || isNaN(new Date(todate).getTime())) {
+                return res.status(400).json({ message: dateFormatError });
+            }
+            filters.todate = todate;
+        }
+     
+        if (filters.fromdate && filters.todate && new Date(filters.fromdate) > new Date(filters.todate)) {
+            return res.status(400).json({ message: "Validation failed: 'fromdate' cannot be later than 'todate'." });
+        }
+        
+        if (query.verticalId) {
+            const verticalId = Number(query.verticalId);
+            if (isNaN(verticalId)) {
+                return res.status(400).json({ message: "Validation failed: 'verticalId' must be a number." });
+            }
+            filters.verticalId = verticalId;
+        }
+        
+        if (query.templateId) {
+             const templateId = Number(query.templateId);
+             if (isNaN(templateId)) {
+                return res.status(400).json({ message: "Validation failed: 'templateId' must be a number." });
+             }
+             filters.templateId = templateId;
+        }
+        const results = await SearchService.search(filters);
         res.status(200).json(results);
-    } catch (error: any) {
-        logger.error(`Route Error in /campaign/search: ${error.message}`);
-        let status = 500;
-        const message = error.message || 'Internal Server Error';
+    }
+    catch (error: unknown) {
         
-        // Check for specific error types
-        if (message.includes('Validation failed:')) status = 400;
-        else if (message.includes('Search operation failed:')) status = 500;
-        
-        res.status(status).json({ message });
+        if (typeof error === 'object' && error !== null && 'status' in error && 'message' in error) {
+            const err = error as { status: number; message: string };
+            logger.error(`Route Error in /campaign/search: ${err.message}`);
+            return res.status(err.status).json({ message: err.message });
+        }
+        logger.error('Route Error in /campaign/search:', { error });
+        res.status(500).json({ message: 'An unexpected error occurred.' });
     }
 });
 
