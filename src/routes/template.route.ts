@@ -128,4 +128,91 @@ templateRouter.post(
   }
 );
 
+templateRouter.get(
+  '/:templateId/image/list/vertical/:verticalId',
+   async (req: Request, res: Response) => {
+    const { templateId, verticalId } = req.params;
+
+    if (!templateId || !verticalId) {
+      return res.status(400).json({ message: 'verticalId and templateId are required' });
+    }
+
+    try {
+      const images = await TemplateService.listImages(
+        Number(verticalId),
+        Number(templateId)
+      );
+      res.status(200).json({ message: 'Fetched images successfully', data: images });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch images';
+      res.status(500).json({ message });
+    }
+  }
+);  
+
+// Fetch a single image by name
+templateRouter.get(
+  '/:templateId/verticals/:verticalId/:imageName',
+  async (req: Request, res: Response) => {
+    const { templateId, verticalId, imageName } = req.params;
+
+    if (!templateId || !verticalId || !imageName) {
+      return res
+        .status(400)
+        .json({ message: 'templateId, verticalId, and imageName are required' });
+    }
+
+    try {
+      const imageBuffer = await TemplateService.getImage(
+        Number(verticalId),
+        Number(templateId),
+        imageName
+      );
+
+      if (!imageBuffer) {
+        return res.status(404).json({ message: 'Image not found' });
+      }
+
+      const ext = imageName.split('.').pop()?.toLowerCase();
+      const contentType =
+        ext === 'png'
+          ? 'image/png'
+          : ext === 'jpg' || ext === 'jpeg'
+          ? 'image/jpeg'
+          : 'application/octet-stream';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${imageName}"`);
+      res.send(imageBuffer);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch image';
+      res.status(500).json({ message });
+    }
+  }
+);
+
+templateRouter.delete(
+  '/:templateId/verticals/:verticalId/:imageName',
+  async (req: Request, res: Response) => {
+    const { templateId, verticalId, imageName } = req.params;
+
+    if (!templateId || !verticalId || !imageName) {
+      return res
+        .status(400)
+        .json({ message: 'templateId, verticalId, and imageName are required' });
+    }
+
+    try {
+      await TemplateService.deleteImage(
+        Number(verticalId),
+        Number(templateId),
+        imageName
+      );
+      res.status(200).json({ message: `Deleted image '${imageName}' successfully` });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete image';
+      res.status(500).json({ message });
+    }
+  }
+);
 export default templateRouter;

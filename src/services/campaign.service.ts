@@ -408,21 +408,24 @@ public async uploadAssetImage(
   const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
-  const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-  const s3Key = `campaigns/${campaignId}/assets/${assetId}${ext}`;
+  // Always store as PNG regardless of uploaded file type
+  const s3Key = `campaigns/${campaignId}/assets/${assetId}.png`;
 
   try {
     const fileBuffer = await fs.readFile(file.path);
+
+    // Upload and overwrite previous image if exists
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
 
+    // Delete temp file
     try {
       await fs.unlink(file.path);
     } catch (unlinkErr) {
       logger.warn(`Failed to delete temp file ${file.path}: ${(unlinkErr as Error).message}`);
     }
 
-    logger.info(`Uploaded image to ${s3Key} (overwritten if existed)`);
-    return { campaignId, assetId, s3Key, message: 'Image uploaded successfully (overwritten if existed)' };
+    logger.info(`Uploaded image to ${s3Key} (always overwrites previous)`);
+    return { campaignId, assetId, s3Key, message: 'Image uploaded successfully as PNG' };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to upload asset image';
     logger.error(`Error uploading asset image: ${message}`);
@@ -438,7 +441,6 @@ public async getAssetImage(
   if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
   const s3Prefix = `campaigns/${campaignId}/assets/${assetId}`;
-  const possibleExts = ['.jpg', '.jpeg', '.png'];
 
   try {
     const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
@@ -446,20 +448,10 @@ public async getAssetImage(
     if (!allObjects || allObjects.length === 0) {
       throw new Error('Image not found for given campaignId and assetId');
     }
-
-    const imageObject = allObjects.find((obj: any) =>
-      possibleExts.some(ext => obj.key.endsWith(`${assetId}${ext}`))
-    );
-
-    if (!imageObject) throw new Error('Image not found for given assetId');
-
+    const imageObject = allObjects[0];
     const buffer = imageObject.body as Buffer;
     const key = imageObject.key;
-
-    const ext = path.extname(key).toLowerCase();
-    let contentType = 'application/octet-stream';
-    if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
-    else if (ext === '.png') contentType = 'image/png';
+    const contentType = imageObject.contentType || 'application/octet-stream';
 
     return { buffer, key, contentType };
   } catch (err: unknown) {
@@ -468,4 +460,4 @@ public async getAssetImage(
   }
 }
 }
-export default new CampaignService();
+export default new CampaignService(); 

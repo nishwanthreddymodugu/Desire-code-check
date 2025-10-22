@@ -6,9 +6,12 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { getUser } from '../utils/auth';
+import campaignService from '../services/campaign.service';
 
 const logger = createLogger(module);
 const CampaignRouter = Router();
+const upload = multer();
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /* ---------------- IMAGE UPLOAD CONFIG ---------------- */
@@ -156,6 +159,32 @@ CampaignRouter.post('/csv/upload', csvUpload.array('csv'), async (req, res) => {
   }
 });
 
+/* ---------------- GET IMAGE FROM LOCALSTACK ---------------- */
+CampaignRouter.get('/:campaignId/images/:imageName', async (req, res) => {
+  try {
+    const { campaignId, imageName } = req.params;
+    const s3Prefix = `campaigns/${campaignId}/images/${imageName}`;
+
+    const imageBuffer = await campaignService.getCampaignImage(s3Prefix);
+
+    const ext = path.extname(imageName).toLowerCase();
+    let contentType = '';
+
+    if (ext === '.png') {
+      contentType = 'image/png';
+    } else if (ext === '.jpg' || ext === '.jpeg') {
+      contentType = 'image/jpeg';
+    } else {
+      return res.status(400).json({ error: 'Unsupported image format. Only JPG, JPEG, and PNG are allowed.' });
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.send(imageBuffer);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
 /* ---------------- EXPORTED IMAGE UPLOAD ---------------- */
 CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async (req, res) => {
   const { campaignId, requestId } = req.body;
@@ -173,36 +202,44 @@ CampaignRouter.post('/image/exported/upload', imageUpload.array('images'), async
   }
 });
 
-/* ---------------- GET EXPORTED IMAGE ---------------- */
-CampaignRouter.get('/:campaignId/images/exported/:requestId', async (req, res) => {
-  try {
-    const { campaignId, requestId } = req.params;
-    const { buffer, contentType } = await CampaignService.getExportedImage(Number(campaignId), Number(requestId));
-    res.setHeader('Content-Type', contentType);
-    res.send(buffer);
-  } catch (err: any) {
-    logger.error(err.message);
-    res.status(404).json({ error: err.message || 'Failed to retrieve image' });
-  }
-});
+CampaignRouter.get('/:campaignId/images/exported/:requestId',
+  async (req: Request, res: Response) => {
+    try {
+      const { campaignId, requestId } = req.params;
 
-/* ---------------- ASSET IMAGE UPLOAD ---------------- */
+      const { buffer, contentType } = await CampaignService.getExportedImage(
+        Number(campaignId),
+        Number(requestId)
+      );
+
+      res.setHeader('Content-Type', contentType);
+      res.send(buffer);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to retrieve image';
+      logger.error(message);
+      res.status(404).json({ error: message });
+    }
+  }
+);
+
+/* ---------------- UPLOAD ASSET IMAGE ROUTE ---------------- */
 CampaignRouter.post('/image/asset/upload', imageUpload.single('image'), async (req, res) => {
   const { campaignId, assetId } = req.body;
   const file = req.file;
 
-  if (!campaignId || !assetId) return res.status(400).json({ message: 'campaignId and assetId are required' });
+  if (!campaignId || !assetId)
+    return res.status(400).json({ message: 'campaignId and assetId are required' });
   if (!file) return res.status(400).json({ message: 'Image file is required' });
 
   try {
     const result = await CampaignService.uploadAssetImage(Number(campaignId), Number(assetId), file);
-    const status = result.message === 'Image already exists for this assetId' ? 200 : 201;
-    res.status(status).json(result);
+    res.status(201).json(result);
   } catch (err: any) {
     logger.error(err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 /* ---------------- GET IMAGE BY ASSET ID ---------------- */
 CampaignRouter.get('/:campaignId/asset/:assetId', async (req, res) => {
@@ -225,3 +262,5 @@ CampaignRouter.get('/:campaignId/asset/:assetId', async (req, res) => {
 });
 
 export default CampaignRouter;
+
+
