@@ -71,10 +71,6 @@ class CampaignService {
           createdBy: campaignInput.createdByUserID,
         };
         const newCampaign = await CampaignDAO.createCampaign(campaignData, transaction);
-        // const clonePromises = originalAssets.map(asset => figmaService.cloneFile(asset.figmaId!));
-        // const clonedFigmaIds = await Promise.all(clonePromises);
-        //const clonePromises = originalAssets.map(asset => FigmaClient.cloneFile(asset.figmaId!));
-        //const clonedFigmaIds = await Promise.all(clonePromises);
         const clonePromises = originalAssets.map(asset => 
           FigmaClient.cloneFile(asset.figmaId!, newCampaign.campaignId, asset.assetId)
       );
@@ -407,8 +403,6 @@ public async uploadAssetImage(
 
   const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
-
-  // Always store as PNG regardless of uploaded file type
   const s3Key = `campaigns/${campaignId}/assets/${assetId}.png`;
 
   try {
@@ -416,8 +410,6 @@ public async uploadAssetImage(
 
     // Upload and overwrite previous image if exists
     await s3Service.putObject(bucket, s3Key, fileBuffer, file.mimetype);
-
-    // Delete temp file
     try {
       await fs.unlink(file.path);
     } catch (unlinkErr) {
