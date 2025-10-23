@@ -6,6 +6,7 @@ import { TemplateIn, TemplateOut, TemplateGetOut } from '../interfaces/template.
 import createLogger from '../config/logger';
 import fs from 'fs/promises'; 
 import s3Service from './s3.service';
+import path from 'path';
 
 const logger = createLogger(module);
 
@@ -139,7 +140,7 @@ class TemplateService {
       return Promise.reject(new Error('Image file is required'));
     }
 
-    const s3Key = `verticals/${verticalId}/templates/${templateId}/images/${file.originalname}`;
+    const s3Key = `verticals/${verticalId}/templates/${templateId}/${file.originalname}`;
     const bucket = process.env.IMAGE_BUCKET;
 
     if (!bucket) {
@@ -187,24 +188,37 @@ class TemplateService {
 }
 
 // Get a single image by name (compatible with your existing s3Service)
-public async getImage(verticalId: number, templateId: number, imageName: string) {
+public async getTemplateImage(
+  verticalId: number,
+  templateId: number,
+  imageName: string
+): Promise<{ buffer: Buffer; contentType: string; s3Key: string }> {
+  if (!verticalId) throw new Error('verticalId is required');
+  if (!templateId) throw new Error('templateId is required');
+  if (!imageName) throw new Error('imageName is required');
+
   const bucket = process.env.IMAGE_BUCKET;
   if (!bucket) throw new Error('IMAGE_BUCKET environment variable is not set');
 
-  const s3Key = `verticals/${verticalId}/templates/${templateId}/${imageName}`;
+  const s3Prefix = `verticals/${verticalId}/templates/${templateId}/`;
+  const expectedKey = `${s3Prefix}${imageName}`;
 
-  try {
-    // Use imported s3Service directly
-    const objects = await s3Service.getObjectsByPrefix(bucket, s3Key);
+  const allObjects = await s3Service.getObjectsByPrefix(bucket, s3Prefix);
+  const imageObject = allObjects.find(obj => obj.key === expectedKey);
 
-    if (!objects || objects.length === 0) {
-      throw new Error(`Image '${imageName}' not found in S3.`);
-    }
-
-    return objects[0].body;
-  } catch (error) {
-    throw new Error(`Failed to fetch image: ${(error as Error).message}`);
+  if (!imageObject || !imageObject.body) {
+    throw new Error(`Image '${imageName}' not found for verticalId ${verticalId} and templateId ${templateId}`);
   }
+
+  const buffer = imageObject.body as Buffer;
+  const s3Key = imageObject.key;
+
+  const ext = path.extname(s3Key).toLowerCase();
+  let contentType = 'application/octet-stream';
+  if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+  else if (ext === '.png') contentType = 'image/png';
+
+  return { buffer, contentType, s3Key };
 }
 
 public async deleteImage(
